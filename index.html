@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V16</title>
+    <title>家教小幫手 V16 (修復版)</title>
     <style>
         body { font-family: '-apple-system', 'Segoe UI', sans-serif; background-color: #f4f7f6; color: #333; padding: 10px; margin: 0; padding-top: 20px; }
         .container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: auto; }
@@ -173,6 +173,9 @@
 <div id="actionModal">
     <div class="modal-content">
         <div id="modalTitle" class="modal-title"></div>
+        
+        <button class="modal-btn" style="background:#2196f3; color:white;" onclick="editRecord()">✏️ 臨時更改時數/費用</button>
+        
         <button class="modal-btn" style="background:#ff9800; color:white;" onclick="updateStatus('unpaid')">⚠️ 標記：已上完 (尚未收費)</button>
         <button class="modal-btn" style="background:#4caf50; color:white;" onclick="updateStatus('paid')">✅ 標記：已上完 (且已收費)</button>
         <button class="modal-btn" style="background:#9e9e9e; color:white;" onclick="updateStatus('leave')">💤 標記：學生請假 (不計費)</button>
@@ -207,6 +210,13 @@
             localStorage.setItem('tutorClassesV16', JSON.stringify(fixedClasses));
             localStorage.setItem('tutorRecordsV16', JSON.stringify(records));
         } catch (e) {}
+    }
+
+    // 【新增時間轉換函式，協助精確判斷重疊 BUG 2】
+    function timeToMins(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
     }
 
     function toggleForm() {
@@ -382,7 +392,7 @@
                 <div class="record-title">${titleText}</div>
                 <div class="actions">
                     <button class="btn btn-blue" style="padding:6px; flex:1;" onclick="openModalFromList(${originalIndex})">✏️ 更改狀態</button>
-                    <button class="btn-delete" onclick="records.splice(${originalIndex}, 1); saveToStorage(); renderApp();">刪除</button>
+                    <button class="btn-delete" onclick="deleteRecordDirectly(${originalIndex})">刪除</button>
                 </div>
             `;
             recordList.appendChild(card);
@@ -404,7 +414,7 @@
         document.getElementById('total-debt').innerText = `$${totalDebt}`;
     }
 
-    // 新增排課與防撞功能
+    // 【修復 BUG 2：時段重疊精確偵測邏輯】
     function addClass() {
         const type = document.getElementById('typeInput').value;
         const student = document.getElementById('studentInput').value.trim();
@@ -417,9 +427,16 @@
             const hours = document.getElementById('hoursInput').value;
             const rate = document.getElementById('rateInput').value;
             
-            // 防撞檢測 (固定課表排重疊)
-            const conflict = fixedClasses.find(c => c.day === day && c.time === time);
-            if (conflict && !confirm(`⚠️ 警告：週選定時段已有【${conflict.student}】的課程！是否仍要重疊排課？`)) return;
+            // 防撞檢測 (精確比對時段)
+            const startMins = timeToMins(time);
+            const endMins = startMins + parseFloat(hours) * 60;
+            const conflict = fixedClasses.find(c => {
+                if (c.day !== day) return false;
+                const cStart = timeToMins(c.time);
+                const cEnd = cStart + parseFloat(c.hours) * 60;
+                return (startMins < cEnd && endMins > cStart);
+            });
+            if (conflict && !confirm(`⚠️ 警告：該時段與【${conflict.student}】的固定課程重疊！是否仍要排課？`)) return;
 
             fixedClasses.push({ day, time, student, hours, rate });
         } 
@@ -430,9 +447,16 @@
             const rate = document.getElementById('rateInput').value;
             if(!date || !time) { alert('請填寫日期與時間！'); return; }
 
-            // 防撞檢測 (臨時課排重疊)
-            const conflict = records.find(r => r.date === date && r.time === time);
-            if (conflict && !confirm(`⚠️ 警告：這天該時段已排定【${conflict.student}】的項目！是否繼續？`)) return;
+            // 防撞檢測 (精確比對實體紀錄)
+            const startMins = timeToMins(time);
+            const endMins = startMins + parseFloat(hours) * 60;
+            const conflict = records.find(r => {
+                if (r.date !== date || r.status === 'leave' || r.hours === 0) return false;
+                const rStart = timeToMins(r.time);
+                const rEnd = rStart + parseFloat(r.hours) * 60;
+                return (startMins < rEnd && endMins > rStart);
+            });
+            if (conflict && !confirm(`⚠️ 警告：這天該時段已排定【${conflict.student}】的行程！是否繼續？`)) return;
 
             const fee = parseFloat(hours) * parseInt(rate);
             records.push({ date, time, student, hours, fee, status: 'pending' });
@@ -443,7 +467,6 @@
             const fee = document.getElementById('customFeeInput').value;
             if(!date || !note || !fee) { alert('請完整填寫日期、雜費說明與金額！'); return; }
 
-            // 雜費特徵：時數為 0，直接填總金額，預設狀態為 unpaid 未收費
             records.push({ date, time: '', student, hours: 0, fee: parseInt(fee), status: 'unpaid', note: note });
         }
         
@@ -460,7 +483,8 @@
     }
     
     function openModalFromList(index) {
-        currentModalTarget = { ...records[index], originalIndex: index };
+        const record = records[index];
+        currentModalTarget = { ...record, originalIndex: index };
         const displayName = record.hours === 0 ? `💰雜費: ${record.note}` : record.student;
         document.getElementById('modalTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
         document.getElementById('actionModal').style.display = 'flex';
@@ -471,6 +495,36 @@
         currentModalTarget = null;
     }
 
+    // 【優化 1：臨時更改時數費用邏輯】
+    function editRecord() {
+        if (currentModalTarget.isExtraItem) {
+            alert("雜費項目無法更改時數，請刪除後重新新增！");
+            return;
+        }
+        
+        let newHours = prompt(`請輸入【${currentModalTarget.student}】新的上課時數：`, currentModalTarget.hours);
+        if (newHours && !isNaN(newHours)) {
+            newHours = parseFloat(newHours);
+            let rate = currentModalTarget.rate || (currentModalTarget.fee / currentModalTarget.hours);
+            let newFee = newHours * rate;
+            
+            if (currentModalTarget.isFixedProjected) {
+                records.push({
+                    date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, 
+                    hours: newHours, fee: newFee, status: 'unpaid', rate: rate
+                });
+            } else {
+                const index = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : 
+                    records.findIndex(r => r.date === currentModalTarget.date && r.student === currentModalTarget.student && r.time === currentModalTarget.time && r.hours === currentModalTarget.hours);
+                if (index !== -1) {
+                    records[index].hours = newHours;
+                    records[index].fee = newFee;
+                }
+            }
+            saveToStorage(); renderApp(); closeModal();
+        }
+    }
+
     function updateStatus(newStatus) {
         if (currentModalTarget.isFixedProjected) {
             records.push({
@@ -479,23 +533,37 @@
             });
         } else {
             const index = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : 
-                records.findIndex(r => r.date === currentModalTarget.date && r.student === currentModalTarget.student && r.time === currentModalTarget.time);
+                records.findIndex(r => r.date === currentModalTarget.date && r.student === currentModalTarget.student && r.time === currentModalTarget.time && r.hours === currentModalTarget.hours);
             if (index !== -1) records[index].status = newStatus;
         }
         saveToStorage(); renderApp(); closeModal();
     }
 
+    // 【修復 BUG 1：正確刪除日曆與紀錄項目】
     function handleDelete() {
         if(!confirm('確定要刪除/取消此項目嗎？')) return;
-        if (!currentModalTarget.isFixedProjected) {
+        
+        if (currentModalTarget.isFixedProjected) {
+            // 如果是固定排定，刪除時會自動寫入一筆請假紀錄，使其不再顯示為藍色待辦
+            records.push({
+                date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, 
+                hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave'
+            });
+        } else {
+            // 精準抓取現存紀錄並移除
             const index = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : 
-                records.findIndex(r => r.date === currentModalTarget.date && r.student === currentModalTarget.student && r.time === currentModalTarget.time);
+                records.findIndex(r => r.date === currentModalTarget.date && r.student === currentModalTarget.student && r.time === currentModalTarget.time && r.hours === currentModalTarget.hours);
             if (index !== -1) records.splice(index, 1);
         }
         saveToStorage(); renderApp(); closeModal();
     }
 
-    // 💰 優化：一鍵批量結清該學生在選定區間內的所有未收學費
+    function deleteRecordDirectly(index) {
+        if(!confirm('確定要刪除此筆紀錄嗎？')) return;
+        records.splice(index, 1);
+        saveToStorage(); renderApp();
+    }
+
     function batchSettleUnpaid() {
         const student = document.getElementById('studentFilter').value;
         const filtered = getFilteredRecords().filter(r => r.status === 'unpaid');
