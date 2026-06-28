@@ -1,36 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="家教小幫手">
+    
+    <title>家教小幫手 V18</title>
+    <style>
+        /* 現代化行動版 UI 樣式 */
+        :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f4f7f9; --card-bg: #ffffff; }
+        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
+        .container { max-width: 600px; margin: auto; }
+        
+        h2 { text-align: center; color: #2c3e50; margin-top: 5px; font-size: 1.5em; font-weight: 800; }
+        h3 { color: #455a64; border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1em; margin-top: 25px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; }
+        .filter-select { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); font-weight: bold; border-radius: 10px; padding: 12px 8px; flex: 1; text-align: center; font-size: 0.95em; box-shadow: 0 2px 8px rgba(33,150,243,0.1); appearance: none; }
+        
+        .dashboard { display: flex; gap: 10px; margin-bottom: 15px; text-align: center; }
+        .card { flex: 1; background: var(--card-bg); padding: 15px 5px; border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+        .card h4 { margin: 0 0 8px 0; font-size: 0.75em; color: #777; font-weight: 600; }
+        .card p { margin: 0; font-size: 1.25em; font-weight: bold; }
+        .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
+
+        .action-scroll-wrapper { overflow-x: auto; white-space: nowrap; margin-bottom: 15px; padding-bottom: 5px; }
+        .action-row { display: inline-flex; gap: 10px; }
+        .btn { padding: 12px 16px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9em; cursor: pointer; text-align: center; display: inline-block; }
+        .btn-export { background: #607d8b; color: white; }
+        .btn-billing { background: var(--warning); color: white; display: none; }
+        .btn-batch-paid { background: var(--success); color: white; display: none; }
+        .btn-manage { background: #795548; color: white; }
+
+        .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; transition: opacity 0.3s; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; z-index: 100; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
+        .bottom-sheet.show { bottom: 0; }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sheet-title { font-weight: bold; font-size: 1.2em; color: #333; }
+        .btn-close { background: #eee; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #555; }
+
+        .input-row { display: flex; gap: 12px; margin-bottom: 15px; }
+        .input-group { flex: 1; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: #555; }
+        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: #fafafa; transition: border-color 0.2s;}
+        input:focus, select:focus { border-color: var(--primary); outline: none; background: white;}
+        .btn-add { background-color: var(--success); color: white; width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; box-shadow: 0 4px 10px rgba(76,175,80,0.3);}
+
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 6px 16px rgba(33,150,243,0.4); cursor: pointer; z-index: 50; transition: transform 0.1s; }
+        .fab:active { transform: scale(0.95); }
+
+        .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .calendar-header { font-weight: 800; font-size: 1.2em; color: #333; margin: 0; }
+        
+        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #666; font-weight: 600;}
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 4px; }
+        .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #9e9e9e; }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #e0e0e0; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
+        .cal-day-name { background: #607d8b; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: bold; }
+        .cal-cell { background: white; min-height: 90px; padding: 4px; display: flex; flex-direction: column; }
+        .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+        .cal-date { color: #555; }
+        .cal-day-hours { color: var(--primary); font-size: 0.85em; background: #e3f2fd; padding: 2px 4px; border-radius: 4px;}
+        .cal-today { background: #fffde7; } .cal-today .cal-date { color: var(--warning); }
+        
+        .cal-class { color: white; font-size: 0.75em; padding: 5px 3px; border-radius: 6px; margin-bottom: 4px; text-align: center; line-height: 1.2; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600;}
+        .class-time { font-weight: bold; background: rgba(0,0,0,0.15); border-radius: 3px; display: block; margin-bottom: 2px; font-size: 0.85em; padding: 1px 0;}
+        .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #9e9e9e; }
+
+        .record-card { border: none; border-radius: 12px; padding: 15px; margin-bottom: 10px; background: white; border-left: 5px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #777; font-weight: 600;}
+        .record-title { font-weight: 800; font-size: 1.05em; color: #222; margin-bottom: 5px; }
+        .record-memo { font-size: 0.85em; color: #666; margin-bottom: 10px; background: #f9f9f9; padding: 6px; border-radius: 6px;}
+        .actions { display: flex; gap: 8px; }
+        .btn-delete { background: var(--danger); color: white; padding: 8px; width: 60px; font-size: 0.85em; border-radius: 8px; border:none; font-weight: bold;}
+        .btn-action-blue { background: #e3f2fd; color: var(--primary); padding: 8px; flex: 1; font-size: 0.85em; border-radius: 8px; border:none; font-weight: bold; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; font-weight: 800; }
+        .badge-paid { background: #e8f5e9; color: #2e7d32; } 
+        .badge-unpaid { background: #fff3e0; color: #e65100; } 
+        .badge-leave { background: #f5f5f5; color: #616161; }
+        .badge-pending { background: #e3f2fd; color: #1565c0; }
+
+        .fixed-class-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .fixed-class-info { flex: 1; }
+        .fixed-class-title { font-weight: bold; font-size: 1em; color: #333; margin-bottom: 4px; }
+        .fixed-class-detail { font-size: 0.85em; color: #666; }
+        .btn-remove-fixed { background: #ffebee; color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85em; cursor: pointer; }
+
+        #actionModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
+        .modal-content { background:white; padding:25px; width:85%; max-width:350px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .modal-title { font-weight: 800; font-size: 1.15em; margin-bottom: 5px; color: #222; }
+        .modal-memo { font-size: 0.9em; color: #777; margin-bottom: 15px; }
+        .modal-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; }
+
+        .backup-section { margin-top: 30px; padding: 20px; background: #fff; border-radius: 12px; font-size: 0.85em; color: #666; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+        .backup-section input[type="file"] { margin-top: 10px; font-size: 0.8em; padding: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📅 家教小幫手</h2>
+
+    <div class="filter-section">
+        <select id="timeFilter" class="filter-select" onchange="renderApp()">
+            <option value="month">📅 本月區間</option>
+            <option value="week">📆 本週區間</option>
+            <option value="today">☀️ 今日區間</option>
+            <option value="all">🌍 全部時間</option>
+        </select>
+        <select id="studentFilter" class="filter-select" onchange="renderApp()">
+            <option value="ALL">🧑‍🎓 所有學生</option>
+        </select>
+    </div>
+
+    <div class="dashboard">
+        <div class="card"><h4>篩選時數</h4><p id="total-hours" class="text-blue">0</p></div>
+        <div class="card"><h4>篩選已收</h4><p id="total-income" class="text-green">$0</p></div>
+        <div class="card"><h4>應收欠費</h4><p id="total-debt" class="text-orange">$0</p></div>
+    </div>
+
+    <div class="action-scroll-wrapper">
+        <div class="action-row">
+            <button class="btn btn-manage" onclick="openFixedManageSheet()">⚙️ 學生/課表管理</button>
+            <button class="btn btn-export" onclick="exportCSV()">📥 匯出報表</button>
+            <button id="btnBilling" class="btn btn-billing" onclick="generateBillingMessage()">💬 複製請款</button>
+            <button id="btnBatchPaid" class="btn btn-batch-paid" onclick="batchSettleUnpaid()">💰 一鍵結清</button>
+        </div>
+    </div>
+
+    <div class="calendar-nav-bar">
+        <button class="btn-nav" onclick="changeMonth(-1)">◀ 上個月</button>
+        <div class="calendar-header" id="calendarMonth"></div>
+        <button class="btn-nav" onclick="changeMonth(1)">下個月 ▶</button>
+    </div>
+    
+    <div class="color-legend">
+        <div class="legend-item"><div class="legend-box box-pending"></div> 待上課</div>
+        <div class="legend-item"><div class="legend-box box-unpaid"></div> 待收費</div>
+        <div class="legend-item"><div class="legend-box box-paid"></div> 已收費</div>
+        <div class="legend-item"><div class="legend-box box-leave"></div> 請假/取消</div>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+
+    <h3>🧾 帳單與紀錄</h3>
+    <div id="recordList"></div>
+
+    <div class="backup-section">
+        <strong>⚙️ 資料備份中心</strong><br>
+        <button style="margin-top:10px; padding:8px 16px; border-radius:8px; border:1px solid #ccc; background:#fafafa; font-weight:bold; cursor:pointer;" onclick="backupData()">☁️ 下載系統備份檔</button><br>
+        <input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
+    </div>
+</div>
+
+<div class="fab" onclick="openAddSheet()">+</div>
+
+<div class="bottom-sheet-overlay" id="addSheetOverlay" onclick="closeSheets()"></div>
+<div class="bottom-sheet" id="addSheet">
+    <div class="sheet-header">
+        <div class="sheet-title">➕ 排定新課程/項目</div>
+        <button class="btn-close" onclick="closeSheets()">×</button>
+    </div>
+    
+    <div class="input-row">
+        <div class="input-group">
+            <label>排課類型</label>
+            <select id="typeInput" onchange="toggleFormFields()">
+                <option value="fixed">🔄 固定每週上課</option>
+                <option value="temp">📌 單次臨時排課</option>
+                <option value="extra">💵 教材費/雜費項目</option>
+            </select>
+        </div>
+    </div>
+    <div class="input-row" id="dayPickerRow">
+        <div class="input-group">
+            <label>星期幾</label>
+            <select id="dayInput">
+                <option value="0">星期日</option><option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option><option value="6">星期六</option>
+            </select>
+        </div>
+    </div>
+    <div class="input-row" id="datePickerRow" style="display:none;">
+        <div class="input-group"><label>指定日期</label><input type="date" id="dateInput"></div>
+    </div>
+    <div class="input-row" id="timeStudentRow">
+        <div class="input-group" id="timeGroup"><label>開始時間</label><input type="time" id="timeInput" value="18:00"></div>
+        <div class="input-group">
+            <label>學生姓名</label>
+            <input type="text" id="studentInput" placeholder="例: 小明" list="studentDatalist" oninput="autoFillRate()">
+            <datalist id="studentDatalist"></datalist>
+        </div>
+    </div>
+    <div class="input-row" id="rateRow">
+        <div class="input-group"><label>時數 (小時)</label><input type="number" id="hoursInput" step="0.5" value="2" min="0"></div>
+        <div class="input-group"><label>時薪 ($)</label><input type="number" id="rateInput" value="800" min="0"></div>
+    </div>
+    
+    <div class="input-row" id="memoRow">
+        <div class="input-group"><label>課程備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討期中考卷"></div>
+    </div>
+
+    <div class="input-row" id="customFeeRow" style="display:none;">
+        <div class="input-group"><label>雜費說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
+        <div class="input-group"><label>金額 ($)</label><input type="number" id="customFeeInput" placeholder="輸入總金額" min="0"></div>
+    </div>
+    <button class="btn-add" onclick="addClass()">儲存項目</button>
+</div>
+
+<div class="bottom-sheet" id="manageFixedSheet">
+    <div class="sheet-header">
+        <div class="sheet-title">⚙️ 學生與固定課表管理</div>
+        <button class="btn-close" onclick="closeSheets()">×</button>
+    </div>
+    <div style="font-size:0.85em; color:#666; margin-bottom:15px;">
+        💡 若學生「不再繼續上課」，請將其固定課表刪除。其歷史帳務將不受影響，並轉為歷史學生。
+    </div>
+    <div id="fixedClassListContainer"></div>
+</div>
+
+<div id="actionModal">
+    <div class="modal-content">
+        <div id="modalTitle" class="modal-title"></div>
+        <div id="modalMemo" class="modal-memo"></div>
+        <button class="modal-btn" style="background:var(--primary); color:white;" onclick="editRecord()">✏️ 臨時更改時數/費用</button>
+        <button class="modal-btn" style="background:var(--warning); color:white;" onclick="updateStatus('unpaid')">⚠️ 標記：已上完 (尚未收費)</button>
+        <button class="modal-btn" style="background:var(--success); color:white;" onclick="updateStatus('paid')">✅ 標記：已上完 (且已收費)</button>
+        <button class="modal-btn" style="background:#757575; color:white;" onclick="updateStatus('leave')">💤 標記：學生請假/取消</button>
+        <button class="modal-btn" style="background:var(--danger); color:white;" onclick="handleDelete()">🗑️ 徹底刪除紀錄</button>
+        <button class="modal-btn" style="background:#f5f5f5; color:#333;" onclick="closeModal()">返回</button>
+    </div>
+</div>
+
 <script>
-    // ... (保留前述所有核心程式碼，僅更新 renderCalendar 函式)
+    const today = new Date();
+    let displayYear = today.getFullYear();
+    let displayMonth = today.getMonth(); 
+    
+    let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || JSON.parse(localStorage.getItem('tutorClassesV17')) || [];
+    let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || JSON.parse(localStorage.getItem('tutorRecordsV17')) || []; 
+
+    function saveToStorage() {
+        localStorage.setItem('tutorClassesV18', JSON.stringify(fixedClasses));
+        localStorage.setItem('tutorRecordsV18', JSON.stringify(records));
+    }
+
+    // 🕒 V18 優化：自動推算下課時間
+    function getEndTime(startStr, hours) {
+        if (!startStr || !hours) return '';
+        let [h, m] = startStr.split(':').map(Number);
+        let totalMins = h * 60 + m + parseFloat(hours) * 60;
+        let endH = Math.floor(totalMins / 60) % 24;
+        let endM = Math.floor(totalMins % 60);
+        return `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+    }
+
+    function openAddSheet() {
+        // V18 修復：抓取本地時區日期，防止跨時區日期錯置
+        const todayLocal = new Date();
+        const offset = todayLocal.getTimezoneOffset() * 60000;
+        const localISODate = (new Date(todayLocal - offset)).toISOString().split('T')[0];
+        document.getElementById('dateInput').value = localISODate;
+        
+        document.getElementById('addSheetOverlay').style.display = 'block';
+        setTimeout(() => { document.getElementById('addSheet').classList.add('show'); }, 10);
+    }
+    
+    function openFixedManageSheet() {
+        renderFixedClassManageList();
+        document.getElementById('addSheetOverlay').style.display = 'block';
+        setTimeout(() => { document.getElementById('manageFixedSheet').classList.add('show'); }, 10);
+    }
+
+    function closeSheets() {
+        document.getElementById('addSheet').classList.remove('show');
+        document.getElementById('manageFixedSheet').classList.remove('show');
+        setTimeout(() => { document.getElementById('addSheetOverlay').style.display = 'none'; }, 300);
+    }
+
+    function timeToMins(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    const daysNameArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+    function renderFixedClassManageList() {
+        const container = document.getElementById('fixedClassListContainer');
+        container.innerHTML = '';
+        if (fixedClasses.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999;">目前沒有安排任何固定課表。</p>';
+            return;
+        }
+        fixedClasses.forEach((c, index) => {
+            const timeRange = c.time ? `${c.time}-${getEndTime(c.time, c.hours)}` : '';
+            container.innerHTML += `
+                <div class="fixed-class-item">
+                    <div class="fixed-class-info">
+                        <div class="fixed-class-title">🎓 ${c.student}</div>
+                        <div class="fixed-class-detail">每週 ${daysNameArr[parseInt(c.day)]} ${timeRange} (${c.hours}h)</div>
+                    </div>
+                    <button class="btn-remove-fixed" onclick="removeFixedClass(${index})">🗑️ 停課/刪除</button>
+                </div>
+            `;
+        });
+    }
+
+    function removeFixedClass(index) {
+        const studentName = fixedClasses[index].student;
+        if(confirm(`確定要刪除【${studentName}】的固定課表嗎？\n(歷史請款紀錄會安全保留)`)) {
+            fixedClasses.splice(index, 1);
+            saveToStorage(); renderFixedClassManageList(); renderApp();
+        }
+    }
+
+    function checkTimeConflict(date, time, hours, ignoreRecordIndex = -1, ignoreFixedStudent = null) {
+        if (!time || hours <= 0) return null;
+        const startMins = timeToMins(time);
+        const endMins = startMins + parseFloat(hours) * 60;
+
+        const conflictRec = records.find((r, idx) => {
+            if (idx === ignoreRecordIndex || r.date !== date || r.status === 'leave' || r.hours === 0) return false;
+            const rStart = timeToMins(r.time);
+            const rEnd = rStart + parseFloat(r.hours) * 60;
+            return (startMins < rEnd && endMins > rStart);
+        });
+        if (conflictRec) return conflictRec.student;
+
+        const dateObj = new Date(date);
+        const dayOfWeek = dateObj.getDay().toString();
+        const conflictFixed = fixedClasses.find(c => {
+            if (c.day !== dayOfWeek || c.student === ignoreFixedStudent) return false;
+            const isOverridden = records.some(r => r.date === date && r.student === c.student && r.time === c.time);
+            if (isOverridden) return false;
+
+            const cStart = timeToMins(c.time);
+            const cEnd = cStart + parseFloat(c.hours) * 60;
+            return (startMins < cEnd && endMins > cStart);
+        });
+        if (conflictFixed) return conflictFixed.student;
+
+        return null;
+    }
+
+    function toggleFormFields() {
+        const type = document.getElementById('typeInput').value;
+        document.getElementById('dayPickerRow').style.display = type === 'fixed' ? 'flex' : 'none';
+        document.getElementById('datePickerRow').style.display = (type === 'temp' || type === 'extra') ? 'flex' : 'none';
+        document.getElementById('rateRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
+        document.getElementById('timeGroup').style.display = (type === 'fixed' || type === 'temp') ? 'block' : 'none';
+        document.getElementById('memoRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
+        document.getElementById('customFeeRow').style.display = type === 'extra' ? 'flex' : 'none';
+    }
+
+    function changeMonth(direction) {
+        displayMonth += direction;
+        if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+        if (displayMonth < 0) { displayMonth = 11; displayYear--; }
+        renderApp();
+    }
+
+    function updateStudentFilterOptions() {
+        const studentFilter = document.getElementById('studentFilter');
+        const datalist = document.getElementById('studentDatalist');
+        const currentSelected = studentFilter.value;
+        
+        const activeStudents = new Set(fixedClasses.map(c => c.student));
+        records.forEach(r => { if(r.status === 'unpaid' || r.status === 'pending') activeStudents.add(r.student); });
+        const allStudents = new Set([...fixedClasses.map(c=>c.student), ...records.map(r=>r.student)]);
+        
+        studentFilter.innerHTML = '<option value="ALL">🧑‍🎓 所有學生</option>';
+        datalist.innerHTML = '';
+        allStudents.forEach(student => {
+            const label = !activeStudents.has(student) ? `${student} (歷史學生)` : student;
+            studentFilter.innerHTML += `<option value="${student}">${label}</option>`;
+            datalist.innerHTML += `<option value="${student}"></option>`;
+        });
+        
+        if(allStudents.has(currentSelected)) studentFilter.value = currentSelected;
+        
+        const isSingleStudent = studentFilter.value !== 'ALL';
+        document.getElementById('btnBilling').style.display = isSingleStudent ? 'inline-block' : 'none';
+        const hasUnpaid = getFilteredRecords().some(r => r.status === 'unpaid');
+        document.getElementById('btnBatchPaid').style.display = (isSingleStudent && hasUnpaid) ? 'inline-block' : 'none';
+    }
+
+    function autoFillRate() {
+        const name = document.getElementById('studentInput').value.trim();
+        if (!name) return;
+        let match = fixedClasses.find(c => c.student === name) || records.find(r => r.student === name && r.hours > 0 && r.fee > 0);
+        if (match && match.rate) document.getElementById('rateInput').value = match.rate;
+        else if (match && match.fee) document.getElementById('rateInput').value = match.fee / match.hours;
+    }
+
+    function getFilteredRecords() {
+        const timeF = document.getElementById('timeFilter').value;
+        const studentF = document.getElementById('studentFilter').value;
+        const todayAtMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        return records.filter(r => {
+            if (studentF !== 'ALL' && r.student !== studentF) return false;
+            if (timeF === 'all') return true;
+
+            const [ry, rm, rd] = r.date.split('-');
+            const recDate = new Date(ry, rm - 1, rd);
+
+            if (timeF === 'month') return recDate.getMonth() === displayMonth && recDate.getFullYear() === displayYear;
+            if (timeF === 'today') return r.date === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            if (timeF === 'week') {
+                const dayOfWeek = todayAtMidnight.getDay() || 7; 
+                const monday = new Date(todayAtMidnight); monday.setDate(todayAtMidnight.getDate() - dayOfWeek + 1);
+                const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+                return recDate >= monday && recDate <= sunday;
+            }
+            return true;
+        });
+    }
+
+    function renderApp() {
+        updateStudentFilterOptions();
+        const studentF = document.getElementById('studentFilter').value;
+        const filteredRecords = getFilteredRecords();
+        renderCalendar(studentF);
+        renderRecords(filteredRecords);
+        updateDashboard(filteredRecords);
+    }
 
     function renderCalendar(studentF) {
         document.getElementById('calendarMonth').innerText = `${displayYear}年 ${displayMonth + 1}月`;
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
-        ['日','一','二','三','四','五','六'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
-        
+
+        const daysName = ['日', '一', '二', '三', '四', '五', '六'];
+        daysName.forEach(day => grid.innerHTML += `<div class="cal-day-name">${day}</div>`);
+
         const firstDay = new Date(displayYear, displayMonth, 1).getDay();
         const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+
         for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent;"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(displayYear, displayMonth, d);
+            const dayOfWeek = dateObj.getDay().toString(); 
+            const isToday = (d === today.getDate() && displayMonth === today.getMonth() && displayYear === today.getFullYear());
+            const cellClass = isToday ? 'cal-cell cal-today' : 'cal-cell';
             const dateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            
             let classesToRender = [];
-            // ... (維持原本的資料過濾邏輯)
 
-            // V18.1 優化：精確計算「當日總時數」
+            fixedClasses.filter(c => c.day === dayOfWeek).forEach(c => {
+                const existingRecord = records.find(r => r.date === dateStr && r.student === c.student && r.time === c.time);
+                if (!existingRecord) classesToRender.push({ ...c, status: 'pending', isFixedProjected: true });
+            });
+
+            records.filter(r => r.date === dateStr).forEach(r => {
+                classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r) });
+            });
+
+            if (studentF !== 'ALL') classesToRender = classesToRender.filter(cls => cls.student === studentF);
+            classesToRender.sort((a, b) => a.time.localeCompare(b.time));
+
             let dayTotalHours = 0;
             classesToRender.forEach(cls => {
                 if (cls.status !== 'leave' && cls.hours > 0) dayTotalHours += parseFloat(cls.hours);
             });
 
-            // 顯示：左邊日期，右邊總時數
             let hoursBadge = dayTotalHours > 0 ? `<span class="cal-day-hours">⏱️${dayTotalHours}h</span>` : '';
-            let cellHTML = `<div class="${isToday ? 'cal-cell cal-today' : 'cal-cell'}">
-                            <div class="cal-date-row"><span class="cal-date">${d}</span>${hoursBadge}</div>`;
+            let cellHTML = `<div class="${cellClass}"><div class="cal-date-row"><span class="cal-date">${d}</span>${hoursBadge}</div>`;
             
             classesToRender.forEach((cls) => {
-                // ... (渲染課程標籤邏輯)
+                let bgClass = 'cal-pending';
+                if (cls.status === 'unpaid') bgClass = 'cal-unpaid';
+                if (cls.status === 'paid') bgClass = 'cal-paid';
+                if (cls.status === 'leave') bgClass = 'cal-leave';
+
+                const isExtraItem = cls.hours === 0;
+                const payload = encodeURIComponent(JSON.stringify({
+                    date: dateStr, time: cls.time, student: cls.student, hours: cls.hours, 
+                    rate: cls.rate || 0, fee: cls.fee || (cls.hours * cls.rate), status: cls.status, 
+                    isFixedProjected: cls.isFixedProjected, isExtraItem: isExtraItem, note: cls.note,
+                    originalIndex: cls.originalIndex
+                }));
+
+                const displayName = isExtraItem ? `💰${cls.note}` : cls.student;
+                // V18 優化：日曆格子顯示區間時間
+                const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
+
+                cellHTML += `<div class="cal-class ${bgClass}" onclick="openModal('${payload}')">
+                    ${timeLabel}${cls.status==='paid'?'✅ ':cls.status==='leave'?'💤 ':''}${displayName}
+                </div>`;
             });
-            grid.innerHTML += cellHTML + `</div>`;
+            cellHTML += `</div>`;
+            grid.innerHTML += cellHTML;
         }
     }
+
+    function renderRecords(filteredRecords) {
+        const recordList = document.getElementById('recordList');
+        recordList.innerHTML = '';
+        
+        // V18 優化：過濾後的紀錄，日期相同時，按時間先後排序
+        filteredRecords.sort((a, b) => {
+            if(a.date === b.date) return (b.time || '').localeCompare(a.time || '');
+            return new Date(b.date) - new Date(a.date);
+        });
+        
+        filteredRecords.forEach((record) => {
+            const originalIndex = records.indexOf(record);
+            const card = document.createElement('div');
+            card.className = 'record-card';
+            
+            let badgeClass = 'badge-pending'; let badgeText = '待上課';
+            if(record.status === 'paid') { badgeClass = 'badge-paid'; badgeText = '✅ 已收費'; card.style.borderLeftColor = 'var(--success)'; }
+            if(record.status === 'unpaid') { badgeClass = 'badge-unpaid'; badgeText = '⚠️ 待收費'; card.style.borderLeftColor = 'var(--warning)'; }
+            if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 已請假/取消'; card.style.borderLeftColor = '#9e9e9e'; }
+
+            const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
+            const titleText = record.hours === 0 ? 
+                `📦 雜費項目：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
+                `🎓 ${record.student} (${record.hours} 小時) ${record.status !== 'leave' ? `<span style="color:var(--primary)">$${record.fee}</span>` : ''}`;
+
+            // V18 優化：顯示課程備註
+            const memoHTML = (record.note && record.hours > 0) ? `<div class="record-memo">📝 備註：${record.note}</div>` : '';
+
+            card.innerHTML = `
+                <div class="record-header">
+                    <span>📅 ${record.date} ${timeRange}</span>
+                    <span class="badge ${badgeClass}">${badgeText}</span>
+                </div>
+                <div class="record-title">${titleText}</div>
+                ${memoHTML}
+                <div class="actions">
+                    <button class="btn-action-blue" onclick="openModalFromList(${originalIndex})">✏️ 展開操作</button>
+                    <button class="btn-delete" onclick="deleteRecordDirectly(${originalIndex})">刪除</button>
+                </div>
+            `;
+            recordList.appendChild(card);
+        });
+        if(filteredRecords.length === 0) recordList.innerHTML = '<p style="color:#aaa; text-align:center; padding: 20px;">此區間目前沒有任何紀錄</p>';
+    }
+
+    function updateDashboard(filteredRecords) {
+        let totalHours = 0, totalIncome = 0, totalDebt = 0;
+        filteredRecords.forEach(record => {
+            if (record.status !== 'leave') {
+                totalHours += parseFloat(record.hours || 0);
+                if(record.status === 'paid') totalIncome += parseInt(record.fee);
+                if(record.status === 'unpaid') totalDebt += parseInt(record.fee); 
+            }
+        });
+        document.getElementById('total-hours').innerText = totalHours;
+        document.getElementById('total-income').innerText = `$${totalIncome}`;
+        document.getElementById('total-debt').innerText = `$${totalDebt}`;
+    }
+
+    function addClass() {
+        const type = document.getElementById('typeInput').value;
+        const student = document.getElementById('studentInput').value.trim();
+        if(!student) { alert('請填寫學生姓名！'); return; }
+
+        if (type === 'fixed' || type === 'temp') {
+            const time = document.getElementById('timeInput').value;
+            const hours = Math.max(0, parseFloat(document.getElementById('hoursInput').value) || 0);
+            const rate = Math.max(0, parseInt(document.getElementById('rateInput').value) || 0);
+            const memo = document.getElementById('classMemoInput').value.trim();
+            
+            if (type === 'fixed') {
+                const day = document.getElementById('dayInput').value;
+                if(!time || hours<=0 || rate<=0) { alert('請完整填寫時間與時薪！'); return; }
+                
+                const startMins = timeToMins(time);
+                const endMins = startMins + hours * 60;
+                const conflict = fixedClasses.find(c => {
+                    if (c.day !== day) return false;
+                    const cStart = timeToMins(c.time);
+                    const cEnd = cStart + parseFloat(c.hours) * 60;
+                    return (startMins < cEnd && endMins > cStart);
+                });
+
+                if (conflict && !confirm(`⚠️ 警告：該時段與【${conflict.student}】的固定預排課程衝突！是否仍要排定？`)) return;
+                
+                fixedClasses.push({ day, time, student, hours, rate, note: memo });
+            } else {
+                const date = document.getElementById('dateInput').value;
+                if(!date || !time || hours<=0 || rate<=0) { alert('請完整填寫項目！'); return; }
+
+                let hasConflict = checkTimeConflict(date, time, hours, -1);
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與當天【${hasConflict}】的課程衝突！是否仍要追加排課？`)) return;
+
+                records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo });
+            }
+        } else if (type === 'extra') {
+            const date = document.getElementById('dateInput').value;
+            const note = document.getElementById('itemDescInput').value.trim();
+            const fee = Math.max(0, parseInt(document.getElementById('customFeeInput').value) || 0);
+            if(!date || !note || fee<=0) { alert('請完整填寫教材雜費！'); return; }
+
+            records.push({ date, time: '', student, hours: 0, fee, status: 'unpaid', note });
+        }
+        saveToStorage(); closeSheets(); 
+        document.getElementById('studentInput').value = ''; 
+        document.getElementById('classMemoInput').value = '';
+        renderApp();
+    }
+
+    let currentModalTarget = null;
+
+    function openModal(payloadStr) {
+        currentModalTarget = JSON.parse(decodeURIComponent(payloadStr));
+        const displayName = currentModalTarget.isExtraItem ? `💰雜費: ${currentModalTarget.note}` : currentModalTarget.student;
+        document.getElementById('modalTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
+        document.getElementById('modalMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
+        document.getElementById('actionModal').style.display = 'flex';
+    }
+    
+    function openModalFromList(index) {
+        currentModalTarget = { ...records[index], originalIndex: index };
+        const displayName = records[index].hours === 0 ? `💰雜費: ${records[index].note}` : records[index].student;
+        document.getElementById('modalTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
+        document.getElementById('modalMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
+        document.getElementById('actionModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('actionModal').style.display = 'none';
+        currentModalTarget = null;
+    }
+
+    function editRecord() {
+        if (currentModalTarget.isExtraItem) { alert("雜費項目無上課時數可供修改！"); return; }
+        
+        let newHours = prompt(`請輸入【${currentModalTarget.student}】變更後的上課時數：`, currentModalTarget.hours);
+        if (newHours && !isNaN(newHours)) {
+            newHours = Math.max(0, parseFloat(newHours));
+            let rate = currentModalTarget.rate || (currentModalTarget.fee / currentModalTarget.hours);
+            let newFee = newHours * rate;
+            
+            let ignoreIndex = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : -1;
+            let ignoreFixedStudent = currentModalTarget.isFixedProjected ? currentModalTarget.student : null;
+            
+            let hasConflict = checkTimeConflict(currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex, ignoreFixedStudent);
+            if (hasConflict && !confirm(`⚠️ 警告：時數放大後會與當天【${hasConflict}】重疊衝突！是否強行儲存？`)) return;
+            
+            if (currentModalTarget.isFixedProjected) {
+                records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newFee, status: 'unpaid', rate, note: currentModalTarget.note });
+            } else {
+                const index = currentModalTarget.originalIndex;
+                if (index !== undefined && index !== -1) {
+                    records[index].hours = newHours;
+                    records[index].fee = newFee;
+                    records[index].rate = rate;
+                }
+            }
+            saveToStorage(); renderApp(); closeModal();
+        }
+    }
+
+    function updateStatus(newStatus) {
+        if (currentModalTarget.isFixedProjected) {
+            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note });
+        } else {
+            const index = currentModalTarget.originalIndex;
+            if (index !== undefined && index !== -1) records[index].status = newStatus;
+        }
+        saveToStorage(); renderApp(); closeModal();
+    }
+
+    function handleDelete() {
+        if(!confirm('確定要徹底刪除此項目嗎？')) return;
+        if (currentModalTarget.isFixedProjected) {
+            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave' });
+        } else {
+            const index = currentModalTarget.originalIndex;
+            if (index !== undefined && index !== -1) records.splice(index, 1);
+        }
+        saveToStorage(); renderApp(); closeModal();
+    }
+
+    function deleteRecordDirectly(index) {
+        if(!confirm('確定要徹底刪除此筆紀錄嗎？')) return;
+        records.splice(index, 1);
+        saveToStorage(); renderApp();
+    }
+
+    function batchSettleUnpaid() {
+        const student = document.getElementById('studentFilter').value;
+        const filtered = getFilteredRecords().filter(r => r.status === 'unpaid');
+        if (filtered.length === 0) return;
+        if (!confirm(`確認要將【${student}】的 ${filtered.length} 筆欠費標記為「✅ 已收費」嗎？`)) return;
+
+        filtered.forEach(record => {
+            const index = records.indexOf(record);
+            if (index !== -1) records[index].status = 'paid';
+        });
+        saveToStorage(); renderApp(); alert(`✅ 已一鍵收齊！`);
+    }
+
+    function generateBillingMessage() {
+        const student = document.getElementById('studentFilter').value;
+        const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
+        if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
+
+        let total = unpaidRecords.reduce((sum, r) => sum + r.fee, 0);
+        let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
+        
+        // V18 優化：請款訊息強制按日期+時間排序，並帶上課程備註
+        unpaidRecords.sort((a, b) => {
+            if(a.date === b.date) return (a.time || '').localeCompare(b.time || '');
+            return new Date(a.date) - new Date(b.date);
+        }).forEach(r => {
+            const [y, m, d] = r.date.split('-');
+            if (r.hours === 0) {
+                msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
+            } else {
+                const memoText = r.note ? ` (${r.note})` : '';
+                msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${memoText} ($${r.fee})\n`;
+            }
+        });
+        msg += `\n總計費用為：$${total} 元。\n再麻煩您確認了，謝謝！😊`;
+
+        navigator.clipboard.writeText(msg).then(() => {
+            alert("✅ 請款訊息已複製！\n已經幫你把時間排序好，並加上了你的課程備註。快去 Line 貼上傳送吧。");
+        }).catch(() => { alert("複製失敗，請手動複製文字。"); });
+    }
+
+    function exportCSV() {
+        const exportRecords = getFilteredRecords();
+        if (exportRecords.length === 0) { alert('此區間無紀錄可匯出！'); return; }
+
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,總費用,狀態,備註\n";
+        let totalHours = 0, totalPaid = 0, totalUnpaid = 0;
+
+        exportRecords.forEach(r => {
+            let s = r.status==='paid'?'已收費':r.status==='unpaid'?'未收費':r.status==='leave'?'已請假':'待上課';
+            let name = r.hours === 0 ? `[雜費]${r.note}` : r.student;
+            let memo = r.note || '';
+            csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${memo}\n`;
+            
+            if (r.status !== 'leave') {
+                totalHours += parseFloat(r.hours || 0);
+                if (r.status === 'paid') totalPaid += parseInt(r.fee || 0);
+                if (r.status === 'unpaid') totalUnpaid += parseInt(r.fee || 0);
+            }
+        });
+
+        csvContent += `\n實上總時數,${totalHours},小時\n已收總收入,${totalPaid},元\n未收總欠費,${totalUnpaid},元\n`;
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a"); link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `家教財務報表_精確對帳版.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    function backupData() {
+        const data = { tutorClassesV18: fixedClasses, tutorRecordsV18: records };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url; 
+        
+        // V18 優化：備份檔名使用當下真實日期，而非當前日曆觀看月份
+        const todayStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+        link.download = `家教備份檔_${todayStr}.json`;
+        
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    function restoreData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if(data.tutorClassesV18 && data.tutorRecordsV18) {
+                    fixedClasses = data.tutorClassesV18;
+                    records = data.tutorRecordsV18;
+                    saveToStorage(); renderApp();
+                    alert("☁️ 資料庫成功復活！");
+                } else if (data.tutorClassesV17 && data.tutorRecordsV17) {
+                    fixedClasses = data.tutorClassesV17;
+                    records = data.tutorRecordsV17;
+                    saveToStorage(); renderApp();
+                    alert("☁️ 已成功讀取舊版資料並升級！");
+                } else { alert("檔案版本不相符！"); }
+            } catch (err) { alert("讀取失敗！"); }
+        };
+        reader.readAsText(file);
+    }
+
+    renderApp();
 </script>
+
+</body>
+</html>
