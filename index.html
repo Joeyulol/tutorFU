@@ -7,95 +7,113 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V21</title>
+    <title>家教小幫手 V22</title>
     <style>
-        :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f4f7f9; --card-bg: #ffffff; }
+        :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
         .container { max-width: 600px; margin: auto; }
         
-        h2 { text-align: center; color: #2c3e50; margin-top: 5px; font-size: 1.5em; font-weight: 800; }
+        h2 { text-align: center; color: #1e293b; margin-top: 5px; font-size: 1.6em; font-weight: 800; letter-spacing: 1px; }
+        h3 { color: #334155; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 1.15em; margin-top: 25px; font-weight: 700; }
         
-        .filter-section { display: flex; gap: 10px; margin-bottom: 12px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; }
-        .filter-select { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); font-weight: bold; border-radius: 10px; padding: 10px 8px; flex: 1; text-align: center; font-size: 0.95em; appearance: none; box-shadow: 0 2px 8px rgba(33,150,243,0.1);}
+        /* 融合的控制中心 */
+        .control-center { background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-select { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; border-radius: 10px; padding: 10px 8px; flex: 1; text-align: center; font-size: 0.95em; appearance: none; }
+        .filter-select:focus { border-color: var(--primary); outline: none; }
         
-        .dashboard { display: flex; gap: 10px; margin-bottom: 15px; text-align: center; }
-        .card { flex: 1; background: var(--card-bg); padding: 12px 5px; border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
-        .card h4 { margin: 0 0 6px 0; font-size: 0.75em; color: #777; font-weight: 600; }
-        .card p { margin: 0; font-size: 1.2em; font-weight: bold; }
+        .dashboard { display: flex; gap: 10px; text-align: center; }
+        .dash-card { flex: 1; background: #f8fafc; padding: 12px 5px; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .dash-card h4 { margin: 0 0 6px 0; font-size: 0.75em; color: #64748b; font-weight: 700; }
+        .dash-card p { margin: 0; font-size: 1.25em; font-weight: 800; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        .main-actions { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-main { flex: 1; padding: 12px 5px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9em; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); transition: transform 0.1s;}
-        .btn-main:active { transform: scale(0.96); }
-        .bg-blue { background: linear-gradient(135deg, #42a5f5, #1976d2); }
-        .bg-orange { background: linear-gradient(135deg, #ffa726, #f57c00); }
-        .bg-gray { background: linear-gradient(135deg, #78909c, #455a64); }
+        /* 主操作按鈕 */
+        .main-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .btn-main { padding: 12px 5px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.9em; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.1s;}
+        .btn-main:active { transform: scale(0.95); }
+        .bg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .bg-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .bg-gray { background: linear-gradient(135deg, #64748b, #475569); }
 
-        .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; transition: opacity 0.3s; backdrop-filter: blur(2px);}
-        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; z-index: 100; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
+        /* 底部滑出視窗通用 */
+        .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 99; transition: opacity 0.3s; backdrop-filter: blur(3px);}
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 20px 24px 30px; box-sizing: border-box; z-index: 100; transition: bottom 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 -5px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
         .bottom-sheet.show { bottom: 0; }
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .sheet-title { font-weight: bold; font-size: 1.2em; color: #333; }
-        .btn-close { background: #eee; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #555; display: flex; justify-content: center; align-items: center;}
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sheet-title { font-weight: 800; font-size: 1.25em; color: #1e293b; }
+        .btn-close { background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #64748b; display: flex; justify-content: center; align-items: center;}
 
-        .input-row { display: flex; gap: 12px; margin-bottom: 15px; }
+        /* V22 優化：選項卡 Segmented Control */
+        .segment-control { display: flex; background: #e2e8f0; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+        .segment-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 0.9em; font-weight: 700; color: #64748b; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .segment-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* 表單樣式 */
+        .input-row { display: flex; gap: 12px; margin-bottom: 16px; }
         .input-group { flex: 1; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: #555; }
-        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: #fafafa; }
+        label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.85em; color: #475569; }
+        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 16px; background: #f8fafc; color:#1e293b;}
         input:focus, select:focus { border-color: var(--primary); outline: none; background: white;}
-        .btn-add { background: linear-gradient(135deg, #66bb6a, #388e3c); color: white; width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; box-shadow: 0 4px 10px rgba(76,175,80,0.3);}
+        .btn-add { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3);}
 
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 6px 16px rgba(33,150,243,0.4); cursor: pointer; z-index: 50; }
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 32px; box-shadow: 0 6px 20px rgba(37,99,235,0.4); cursor: pointer; z-index: 50; transition: transform 0.1s; }
+        .fab:active { transform: scale(0.9); }
 
-        .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; }
-        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.2em; color: var(--primary); cursor: pointer; border-bottom: 2px dashed var(--primary); padding-bottom: 2px;}
+        /* 日曆區塊 */
+        .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 10px 15px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .btn-nav { background: #f1f5f9; color: #475569; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+        .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.25em; color: var(--primary); cursor: pointer; padding: 4px 8px; border-radius:8px;}
+        .calendar-header-wrapper:active { background: #eff6ff; }
         .jump-date-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
-        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #666; font-weight: 600;}
-        .legend-item { display: flex; align-items: center; gap: 4px; }
-        .legend-box { width: 12px; height: 12px; border-radius: 3px; }
-        .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #9e9e9e; }
+        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #64748b; font-weight: 700;}
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 12px; height: 12px; border-radius: 4px; }
+        .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #94a3b8; }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #e0e0e0; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
-        .cal-day-name { background: #607d8b; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: bold; }
-        .cal-cell { background: white; min-height: 95px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .cal-cell:active { background: #f0f4f8; }
-        .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; pointer-events: none; }
-        .cal-date { color: #555; width: 20px; text-align: center; border-radius: 4px;}
-        .cal-day-hours { color: var(--primary); font-size: 0.85em; background: #e3f2fd; padding: 2px 4px; border-radius: 4px;}
-        .cal-today { background: #fffde7; } .cal-today .cal-date { color: var(--warning); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #e2e8f0; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+        .cal-day-name { background: #475569; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: 700; }
+        .cal-cell { background: white; min-height: 95px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: background 0.2s; }
+        .cal-cell:active { background: #f8fafc; }
+        .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: 800; margin-bottom: 5px; pointer-events: none; }
+        .cal-date { color: #64748b; width: 22px; text-align: center; border-radius: 6px;}
+        .cal-day-hours { color: var(--primary); font-size: 0.85em; background: #eff6ff; padding: 2px 5px; border-radius: 6px;}
+        .cal-today { background: #fffbeb; } .cal-today .cal-date { color: var(--warning); background:#fef3c7; }
         
-        .cal-class { color: white; font-size: 0.75em; padding: 5px 3px; border-radius: 6px; margin-bottom: 4px; text-align: center; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
-        .class-time { font-weight: bold; background: rgba(0,0,0,0.15); border-radius: 3px; display: block; margin-bottom: 2px; font-size: 0.85em; padding: 1px 0;}
-        .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #9e9e9e; }
+        .cal-class { color: white; font-size: 0.75em; padding: 5px 4px; border-radius: 6px; margin-bottom: 4px; text-align: center; line-height: 1.25; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 700; }
+        .class-time { font-weight: 800; background: rgba(0,0,0,0.15); border-radius: 4px; display: block; margin-bottom: 3px; font-size: 0.85em; padding: 1px 0;}
+        .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #94a3b8; }
 
-        .record-card { border: none; border-radius: 12px; padding: 15px; margin-bottom: 10px; background: white; border-left: 5px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
-        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #777; font-weight: 600;}
-        .record-title { font-weight: 800; font-size: 1.05em; color: #222; margin-bottom: 5px; }
-        .record-memo { font-size: 0.85em; color: #666; margin-bottom: 10px; background: #f9f9f9; padding: 6px; border-radius: 6px;}
+        /* 列表卡片 */
+        .record-card { border: 1px solid #f1f5f9; border-radius: 14px; padding: 16px; margin-bottom: 12px; background: white; border-left: 6px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #64748b; font-weight: 700;}
+        .record-title { font-weight: 800; font-size: 1.1em; color: #1e293b; margin-bottom: 6px; }
+        .record-memo { font-size: 0.85em; color: #475569; margin-bottom: 12px; background: #f8fafc; padding: 8px; border-radius: 8px; border:1px solid #e2e8f0;}
         .actions { display: flex; gap: 8px; }
-        .btn-delete { background: var(--danger); color: white; padding: 8px; width: 60px; font-size: 0.85em; border-radius: 8px; border:none; font-weight: bold;}
-        .btn-action-blue { background: #e3f2fd; color: var(--primary); padding: 8px; flex: 1; font-size: 0.85em; border-radius: 8px; border:none; font-weight: bold; }
+        .btn-delete { background: var(--danger); color: white; padding: 10px; width: 60px; font-size: 0.85em; border-radius: 8px; border:none; font-weight: 800;}
+        .btn-action-blue { background: #eff6ff; color: var(--primary); padding: 10px; flex: 1; font-size: 0.85em; border-radius: 8px; border:none; font-weight: 800; }
         
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; font-weight: 800; }
-        .badge-paid { background: #e8f5e9; color: #2e7d32; } 
-        .badge-unpaid { background: #fff3e0; color: #e65100; } 
-        .badge-leave { background: #f5f5f5; color: #616161; }
-        .badge-pending { background: #e3f2fd; color: #1565c0; }
+        .badge-paid { background: #dcfce7; color: #166534; } 
+        .badge-unpaid { background: #ffedd5; color: #c2410c; } 
+        .badge-leave { background: #f1f5f9; color: #475569; }
+        .badge-pending { background: #eff6ff; color: #1d4ed8; }
 
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .settings-btn { background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #333; }
-        .settings-btn.red { background: #ffebee; color: var(--danger); }
-        .settings-btn.green { background: #e8f5e9; color: var(--success); }
+        /* V22 新增：更清晰的內部財務卡片 */
+        .student-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
+        .student-stat-name { font-weight: 800; font-size: 1.15em; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;}
+        .student-stat-row { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 6px; color:#475569; font-weight:600;}
+        .stat-sub { font-size: 0.8em; color: #94a3b8; font-weight: normal; margin-left: 5px; }
 
-        .student-stat-card { background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .student-stat-name { font-weight: bold; font-size: 1.1em; color: #2c3e50; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;}
-        .student-stat-row { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px; }
+        /* 系統設定列表 */
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+        .settings-btn { background: #f1f5f9; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; color: #475569; }
+        .settings-btn.red { background: #fee2e2; color: var(--danger); }
+        .settings-btn.green { background: #dcfce7; color: var(--success); }
 
-        #actionModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
-        .modal-content { background:white; padding:25px; width:85%; max-width:350px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
-        .modal-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; }
+        /* Action Sheet 專屬樣式 */
+        .action-sheet-btn { width: 100%; padding: 16px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 1.05em; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);}
     </style>
 </head>
 <body>
@@ -103,34 +121,36 @@
 <div class="container">
     <h2>📅 家教小幫手</h2>
 
-    <div class="filter-section">
-        <select id="timeFilter" class="filter-select" onchange="renderApp()">
-            <option value="month">📅 本月</option>
-            <option value="week">📆 本週</option>
-            <option value="today">☀️ 今日</option>
-            <option value="all">🌍 全部</option>
-        </select>
-        <select id="studentFilter" class="filter-select" onchange="renderApp()">
-            <option value="ALL">🧑‍🎓 所有學生</option>
-        </select>
+    <!-- V22 控制中心：將篩選與總覽融合 -->
+    <div class="control-center">
+        <div class="filter-section">
+            <select id="timeFilter" class="filter-select" onchange="renderApp()">
+                <option value="month">📅 本月區間</option>
+                <option value="week">📆 本週區間</option>
+                <option value="today">☀️ 今日即時</option>
+                <option value="all">🌍 歷史全部</option>
+            </select>
+            <select id="studentFilter" class="filter-select" onchange="renderApp()">
+                <option value="ALL">🧑‍🎓 所有學生</option>
+            </select>
+        </div>
+        <div class="dashboard">
+            <div class="dash-card"><h4>總計時數</h4><p id="total-hours" class="text-blue">0h</p></div>
+            <div class="dash-card"><h4>已收總額</h4><p id="total-income" class="text-green">$0</p></div>
+            <div class="dash-card"><h4>待收總額</h4><p id="total-debt" class="text-orange">$0</p></div>
+        </div>
     </div>
 
-    <!-- V21 介面文案精準化 -->
-    <div class="dashboard">
-        <div class="card"><h4>實上時數</h4><p id="total-hours" class="text-blue">0</p></div>
-        <div class="card"><h4>已收學費</h4><p id="total-income" class="text-green">$0</p></div>
-        <div class="card"><h4>待收總額</h4><p id="total-debt" class="text-orange">$0</p></div>
-    </div>
-
+    <!-- 三大核心功能按鈕 -->
     <div class="main-actions">
         <button class="btn-main bg-blue" onclick="openReportSheet()">
-            <span style="font-size:1.4em;">📊</span> 內部報表
+            <span style="font-size:1.6em;">📊</span> 內部報表
         </button>
         <button class="btn-main bg-orange" onclick="openBillingSheet()">
-            <span style="font-size:1.4em;">💬</span> 複製請款
+            <span style="font-size:1.6em;">💬</span> 複製請款
         </button>
         <button class="btn-main bg-gray" onclick="openSettingsSheet()">
-            <span style="font-size:1.4em;">⚙️</span> 系統設定
+            <span style="font-size:1.6em;">⚙️</span> 系統設定
         </button>
     </div>
 
@@ -152,33 +172,33 @@
 
     <div class="calendar-grid" id="calendarGrid"></div>
 
-    <h3 style="margin-top:30px; font-weight:800; color:#2c3e50;">🧾 帳單與歷史紀錄</h3>
+    <h3 style="margin-top:30px; font-weight:800; color:#1e293b;">🧾 帳單與歷史紀錄</h3>
     <div id="recordList"></div>
 </div>
 
 <div class="fab" onclick="openAddSheet()">+</div>
 
-<!-- 新增表單 Bottom Sheet -->
+<!-- 所有底部滑出視窗的共用遮罩 -->
 <div class="bottom-sheet-overlay" id="overlay" onclick="closeAllSheets()"></div>
 
+<!-- 新增表單 Bottom Sheet -->
 <div class="bottom-sheet" id="addSheet">
     <div class="sheet-header">
         <div class="sheet-title" id="sheetFormTitle">➕ 排定新課程/項目</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <div class="input-row">
-        <div class="input-group">
-            <label>排課類型</label>
-            <select id="typeInput" onchange="toggleFormFields()">
-                <option value="fixed">🔄 固定每週上課</option>
-                <option value="temp">📌 單次臨時排課</option>
-                <option value="extra">💵 教材費/代墊雜費</option>
-            </select>
-        </div>
+    
+    <!-- V22 優化：直覺的三大選項卡 -->
+    <div class="segment-control">
+        <div class="segment-btn active" id="seg-fixed" onclick="setFormType('fixed')">🔄 固定課表</div>
+        <div class="segment-btn" id="seg-temp" onclick="setFormType('temp')">📌 單次臨時</div>
+        <div class="segment-btn" id="seg-extra" onclick="setFormType('extra')">💵 教材雜費</div>
     </div>
+    <input type="hidden" id="typeInput" value="fixed">
+
     <div class="input-row" id="dayPickerRow">
         <div class="input-group">
-            <label>星期幾</label>
+            <label>選擇星期幾</label>
             <select id="dayInput">
                 <option value="0">星期日</option><option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option><option value="6">星期六</option>
             </select>
@@ -200,11 +220,11 @@
         <div class="input-group"><label>時薪 ($)</label><input type="number" id="rateInput" value="800" min="0"></div>
     </div>
     <div class="input-row" id="memoRow">
-        <div class="input-group"><label>項目備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討進度"></div>
+        <div class="input-group"><label>課程備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討期中考卷"></div>
     </div>
     <div class="input-row" id="customFeeRow" style="display:none;">
-        <div class="input-group"><label>代墊雜費說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
-        <div class="input-group"><label>金額 ($)</label><input type="number" id="customFeeInput" placeholder="輸入總金額" min="0"></div>
+        <div class="input-group"><label>代墊項目說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
+        <div class="input-group"><label>代墊金額 ($)</label><input type="number" id="customFeeInput" placeholder="輸入金額" min="0"></div>
     </div>
     <button class="btn-add" onclick="addClass()">儲存項目</button>
 </div>
@@ -215,10 +235,10 @@
         <div class="sheet-title">📊 內部財務總覽</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <div style="font-size:0.85em; color:#666; margin-bottom:10px; text-align:center;">
-        目前統計區間：<span id="reportFilterStatus" style="font-weight:bold; color:var(--primary);"></span>
+    <div style="font-size:0.9em; color:#64748b; margin-bottom:15px; text-align:center; font-weight:700;">
+        當前統計區間：<span id="reportFilterStatus" style="color:var(--primary);"></span>
     </div>
-    <div id="reportStudentCardsContainer" style="margin-bottom: 20px;"></div>
+    <div id="reportStudentCardsContainer" style="margin-bottom: 10px;"></div>
 </div>
 
 <!-- 複製請款文字 Sheet -->
@@ -227,8 +247,8 @@
         <div class="sheet-title">💬 產生請款訊息</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <p style="font-size:0.9em; color:#555; margin-bottom:15px; line-height: 1.5;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算他尚未繳交的費用，並為您產生精美專業的 Line 帳單明細。</p>
-    <button class="modal-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製 Line 請款文字</button>
+    <p style="font-size:0.95em; color:#475569; margin-bottom:20px; line-height: 1.6; font-weight:600;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算尚未繳交的費用，並為您產生專業的 Line 明細。</p>
+    <button class="action-sheet-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製 Line 請款文字</button>
 </div>
 
 <!-- 系統設定與管理 Sheet -->
@@ -238,41 +258,42 @@
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
     
-    <div style="font-weight:bold; margin-bottom:10px; color:#555;">🎓 固定課表管理</div>
-    <div id="fixedClassListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #eee; border-radius: 8px; padding: 5px; margin-bottom: 20px;"></div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b;">🎓 固定課表管理</div>
+    <div id="fixedClassListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 5px; margin-bottom: 25px;"></div>
     
-    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">⚡ 批次操作</div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">⚡ 批次操作</div>
     <div class="settings-item">
-        <span>一鍵結清欠費 <span style="font-size:0.75em; color:#999;">(需先選定單一學生)</span></span>
+        <span style="font-weight:700; color:#475569;">一鍵結清欠費 <span style="font-size:0.8em; color:#94a3b8; font-weight:normal;">(需選定單一學生)</span></span>
         <button class="settings-btn green" onclick="batchSettleUnpaid()">💰 結清</button>
     </div>
 
-    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">💾 資料備份與報表</div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">💾 報表與備份</div>
     <div class="settings-item">
-        <span>匯出 CSV 表格檔案</span>
+        <span style="font-weight:700; color:#475569;">匯出 CSV 電腦版報表</span>
         <button class="settings-btn" onclick="exportCSV()">📥 匯出</button>
     </div>
     <div class="settings-item">
-        <span>下載系統雲端備份檔</span>
+        <span style="font-weight:700; color:#475569;">下載系統雲端備份檔</span>
         <button class="settings-btn" onclick="backupData()">☁️ 下載</button>
     </div>
-    <div style="margin-top:5px; font-size:0.8em; color:#666;">
-        🔄 還原資料：<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)" style="padding:0; border:none; background:transparent; margin-top:5px;">
+    <div style="margin-top:10px; font-size:0.85em; color:#64748b; font-weight:700;">
+        🔄 還原資料：<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)" style="padding:0; border:none; background:transparent; margin-top:5px; font-weight:normal;">
     </div>
 </div>
 
-<!-- 課程操作 Modal -->
-<div id="actionModal">
-    <div class="modal-content">
-        <div id="modalTitle" class="modal-title"></div>
-        <div id="modalMemo" class="modal-memo" style="font-size: 0.9em; color: #777; margin-bottom: 15px;"></div>
-        <button class="modal-btn" style="background:var(--primary); color:white;" onclick="editRecord()">✏️ 臨時更改時數/費用</button>
-        <button class="modal-btn" style="background:var(--warning); color:white;" onclick="updateStatus('unpaid')">⚠️ 標記：已上完 (尚未收費)</button>
-        <button class="modal-btn" style="background:var(--success); color:white;" onclick="updateStatus('paid')">✅ 標記：已上完 (且已收費)</button>
-        <button class="modal-btn" style="background:#757575; color:white;" onclick="updateStatus('leave')">💤 標記：學生請假/取消</button>
-        <button class="modal-btn" style="background:var(--danger); color:white;" onclick="handleDelete()">🗑️ 徹底刪除紀錄</button>
-        <button class="modal-btn" style="background:#f5f5f5; color:#333;" onclick="closeModal()">返回</button>
+<!-- V22 優化：操作選單改為優雅的 Action Sheet -->
+<div class="bottom-sheet" id="actionSheet">
+    <div class="sheet-header" style="margin-bottom:10px;">
+        <div class="sheet-title" id="actionSheetTitle">操作項目</div>
+        <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
+    <div id="actionSheetMemo" style="font-size: 0.9em; color: #64748b; margin-bottom: 20px; font-weight:600;"></div>
+    
+    <button class="action-sheet-btn" style="background:var(--primary); color:white;" onclick="editRecord()">✏️ 修改時數或費用</button>
+    <button class="action-sheet-btn" style="background:var(--success); color:white;" onclick="updateStatus('paid')">✅ 標記為：已結清</button>
+    <button class="action-sheet-btn" style="background:var(--warning); color:white;" onclick="updateStatus('unpaid')">⚠️ 標記為：已上/待繳</button>
+    <button class="action-sheet-btn" style="background:#94a3b8; color:white;" onclick="updateStatus('leave')">💤 標記為：取消/請假</button>
+    <button class="action-sheet-btn" style="background:var(--danger); color:white; margin-top:20px;" onclick="handleDelete()">🗑️ 徹底刪除紀錄</button>
 </div>
 
 <script>
@@ -301,12 +322,30 @@
         setTimeout(() => { 
             document.getElementById('overlay').style.display = 'none'; 
             document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; 
-        }, 300);
+        }, 350);
     }
 
     function openSheet(sheetId) {
         document.getElementById('overlay').style.display = 'block';
         setTimeout(() => { document.getElementById(sheetId).classList.add('show'); }, 10);
+    }
+
+    // V22 新增：選項卡 UI 切換邏輯
+    function setFormType(type) {
+        document.getElementById('typeInput').value = type;
+        document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('seg-' + type).classList.add('active');
+        toggleFormFields();
+    }
+
+    function toggleFormFields() {
+        const type = document.getElementById('typeInput').value;
+        document.getElementById('dayPickerRow').style.display = type === 'fixed' ? 'flex' : 'none';
+        document.getElementById('datePickerRow').style.display = (type === 'temp' || type === 'extra') ? 'flex' : 'none';
+        document.getElementById('rateRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
+        document.getElementById('timeGroup').style.display = (type === 'fixed' || type === 'temp') ? 'block' : 'none';
+        document.getElementById('memoRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
+        document.getElementById('customFeeRow').style.display = type === 'extra' ? 'flex' : 'none';
     }
 
     function openAddSheet() {
@@ -318,7 +357,7 @@
         openSheet('addSheet');
     }
 
-    // V21 內部對帳儀表板 (精準隔離學費與代墊雜費)
+    // V22 內部對帳儀表板 (精準呈現學費與雜費明細)
     function openReportSheet() {
         const studentF = document.getElementById('studentFilter').options[document.getElementById('studentFilter').selectedIndex].text;
         const timeF = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
@@ -329,47 +368,65 @@
         container.innerHTML = '';
 
         if(filteredRecords.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999;">此區間無任何帳務紀錄。</p>';
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700;">此區間無任何帳務紀錄。</p>';
         } else {
             let stats = {};
-            let totalAllHours = 0, totalAllPaid = 0, totalAllUnpaid = 0;
+            let totalAllHours = 0;
+            let totalAllTuitionPaid = 0, totalAllMiscPaid = 0;
+            let totalAllTuitionUnpaid = 0, totalAllMiscUnpaid = 0;
 
             filteredRecords.forEach(r => {
                 if(r.status === 'leave') return;
                 let name = r.student;
-                if(!stats[name]) stats[name] = { hours: 0, tuitionPaid: 0, debt: 0 };
+                if(!stats[name]) stats[name] = { hours: 0, tuitionPaid: 0, miscPaid: 0, tuitionUnpaid: 0, miscUnpaid: 0 };
                 
                 stats[name].hours += parseFloat(r.hours || 0);
                 totalAllHours += parseFloat(r.hours || 0);
 
-                // 核心邏輯修正：只有時數大於0的才算作實質學費收入 (淨利)
-                if(r.status === 'paid' && r.hours > 0) { 
-                    stats[name].tuitionPaid += parseInt(r.fee || 0); 
-                    totalAllPaid += parseInt(r.fee || 0); 
+                if(r.status === 'paid') {
+                    if (r.hours > 0) { stats[name].tuitionPaid += r.fee; totalAllTuitionPaid += r.fee; }
+                    else { stats[name].miscPaid += r.fee; totalAllMiscPaid += r.fee; }
                 }
-                // 欠費則是所有未收項目(含學費與代墊雜費)
-                if(r.status === 'unpaid') { 
-                    stats[name].debt += parseInt(r.fee || 0); 
-                    totalAllUnpaid += parseInt(r.fee || 0); 
+                if(r.status === 'unpaid') {
+                    if (r.hours > 0) { stats[name].tuitionUnpaid += r.fee; totalAllTuitionUnpaid += r.fee; }
+                    else { stats[name].miscUnpaid += r.fee; totalAllMiscUnpaid += r.fee; }
                 }
             });
 
+            const totalPaidSum = totalAllTuitionPaid + totalAllMiscPaid;
+            const totalUnpaidSum = totalAllTuitionUnpaid + totalAllMiscUnpaid;
+
             container.innerHTML += `
-                <div class="student-stat-card" style="border-left: 5px solid var(--primary); background: #fff;">
-                    <div class="student-stat-name">🌟 總計 (選定區間)</div>
-                    <div class="student-stat-row"><span>實上總時數：</span><span style="font-weight:bold;">${totalAllHours}h</span></div>
-                    <div class="student-stat-row"><span>淨收學費總額：</span><span style="font-weight:bold; color:var(--success);">$${totalAllPaid}</span></div>
-                    <div class="student-stat-row"><span>待收總額(含雜費)：</span><span style="font-weight:bold; color:var(--danger);">$${totalAllUnpaid}</span></div>
+                <div class="student-stat-card" style="border-left: 6px solid var(--primary);">
+                    <div class="student-stat-name">🌟 總計報表 (選定區間)</div>
+                    <div class="student-stat-row"><span>實上時數：</span><span style="font-weight:900;">${totalAllHours}h</span></div>
+                    <div class="student-stat-row">
+                        <span>已收總額：</span>
+                        <span style="font-weight:900; color:var(--success);">$${totalPaidSum} <br><span class="stat-sub">(學費 $${totalAllTuitionPaid} / 雜費 $${totalAllMiscPaid})</span></span>
+                    </div>
+                    <div class="student-stat-row" style="margin-top:8px; border-top:1px dashed #e2e8f0; padding-top:8px;">
+                        <span>待收總額：</span>
+                        <span style="font-weight:900; color:var(--danger);">$${totalUnpaidSum} <br><span class="stat-sub">(學費 $${totalAllTuitionUnpaid} / 雜費 $${totalAllMiscUnpaid})</span></span>
+                    </div>
                 </div>
             `;
 
             for (let name in stats) {
+                const s = stats[name];
+                const sPaid = s.tuitionPaid + s.miscPaid;
+                const sUnpaid = s.tuitionUnpaid + s.miscUnpaid;
                 container.innerHTML += `
                     <div class="student-stat-card">
                         <div class="student-stat-name">🎓 ${name}</div>
-                        <div class="student-stat-row"><span>實上時數：</span><span>${stats[name].hours}h</span></div>
-                        <div class="student-stat-row"><span>已收學費：</span><span style="color:var(--success);">$${stats[name].tuitionPaid}</span></div>
-                        <div class="student-stat-row"><span>待收總額：</span><span style="font-weight:bold; color:var(--danger);">$${stats[name].debt}</span></div>
+                        <div class="student-stat-row"><span>實上時數：</span><span>${s.hours}h</span></div>
+                        <div class="student-stat-row">
+                            <span>已收總額：</span>
+                            <span style="font-weight:800; color:var(--success);">$${sPaid} <span class="stat-sub">(學$${s.tuitionPaid}/雜$${s.miscPaid})</span></span>
+                        </div>
+                        <div class="student-stat-row">
+                            <span>待繳欠費：</span>
+                            <span style="font-weight:800; color:var(--danger);">$${sUnpaid} <span class="stat-sub">(學$${s.tuitionUnpaid}/雜$${s.miscUnpaid})</span></span>
+                        </div>
                     </div>
                 `;
             }
@@ -393,7 +450,7 @@
             cells.forEach(span => {
                 if(span.innerText === parseInt(d).toString()) {
                     const cell = span.closest('.cal-cell');
-                    cell.style.background = '#e3f2fd';
+                    cell.style.background = '#eff6ff';
                     cell.style.border = '2px solid var(--primary)';
                     cell.style.transform = 'scale(0.95)';
                     setTimeout(() => { cell.style.background = ''; cell.style.border = ''; cell.style.transform = ''; }, 1500);
@@ -404,8 +461,7 @@
 
     function handleCellClick(e, dateStr) {
         if (e.target.closest('.cal-class')) return; 
-        document.getElementById('typeInput').value = 'temp';
-        toggleFormFields();
+        setFormType('temp');
         document.getElementById('dateInput').value = dateStr;
         document.getElementById('sheetFormTitle').innerText = `📅 快速排課：${dateStr.split('-')[1]}月${dateStr.split('-')[2]}日`;
         openAddSheet();
@@ -417,7 +473,6 @@
         return h * 60 + m;
     }
 
-    // 防撞邏輯保持分離狀態，避免幽靈衝突
     function checkTimeConflict(type, targetDateOrDay, time, hours, ignoreRecordIndex = -1) {
         const startMins = timeToMins(time);
         const endMins = startMins + parseFloat(hours) * 60;
@@ -448,23 +503,12 @@
             const conflictFixed = fixedClasses.find(c => {
                 if (c.day !== dayOfWeek) return false;
                 if (records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time)) return false;
-                
                 const cStart = timeToMins(c.time);
                 const cEnd = cStart + parseFloat(c.hours) * 60;
                 return (startMins < cEnd && endMins > cStart);
             });
             return conflictFixed ? conflictFixed.student : null;
         }
-    }
-
-    function toggleFormFields() {
-        const type = document.getElementById('typeInput').value;
-        document.getElementById('dayPickerRow').style.display = type === 'fixed' ? 'flex' : 'none';
-        document.getElementById('datePickerRow').style.display = (type === 'temp' || type === 'extra') ? 'flex' : 'none';
-        document.getElementById('rateRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
-        document.getElementById('timeGroup').style.display = (type === 'fixed' || type === 'temp') ? 'block' : 'none';
-        document.getElementById('memoRow').style.display = (type === 'fixed' || type === 'temp') ? 'flex' : 'none';
-        document.getElementById('customFeeRow').style.display = type === 'extra' ? 'flex' : 'none';
     }
 
     function changeMonth(direction) {
@@ -594,7 +638,7 @@
                 const displayName = isExtraItem ? `💰${cls.note}` : `${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
 
-                cellHTML += `<div class="cal-class ${bgClass}" onclick="openModal('${payload}')">
+                cellHTML += `<div class="cal-class ${bgClass}" onclick="openActionSheet('${payload}')">
                     ${timeLabel}${cls.status==='paid'?'✅ ':cls.status==='leave'?'💤 ':''}${displayName}
                 </div>`;
             });
@@ -620,11 +664,11 @@
             let badgeClass = 'badge-pending'; let badgeText = '待上課';
             if(record.status === 'paid') { badgeClass = 'badge-paid'; badgeText = '✅ 已收費'; card.style.borderLeftColor = 'var(--success)'; }
             if(record.status === 'unpaid') { badgeClass = 'badge-unpaid'; badgeText = '⚠️ 待收費'; card.style.borderLeftColor = 'var(--warning)'; }
-            if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 已取消'; card.style.borderLeftColor = '#9e9e9e'; }
+            if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 取消/請假'; card.style.borderLeftColor = '#94a3b8'; }
 
             const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
             const titleText = record.hours === 0 ? 
-                `📦 雜費代墊：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
+                `📦 代墊雜費：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
                 `🎓 ${record.student} (${record.hours} 小時) ${record.status !== 'leave' ? `<span style="color:var(--primary)">$${record.fee}</span>` : ''}`;
 
             const memoHTML = (record.note && record.hours > 0) ? `<div class="record-memo">📝 備註：${record.note}</div>` : '';
@@ -637,26 +681,26 @@
                 <div class="record-title">${titleText}</div>
                 ${memoHTML}
                 <div class="actions">
-                    <button class="btn-action-blue" onclick="openModalFromList(${originalIndex})">✏️ 展開操作</button>
+                    <button class="btn-action-blue" onclick="openActionSheetFromList(${originalIndex})">✏️ 展開操作</button>
                     <button class="btn-delete" onclick="deleteRecordDirectly(${originalIndex})">刪除</button>
                 </div>
             `;
             recordList.appendChild(card);
         });
-        if(filteredRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">此區間無任何紀錄</p>';
+        if(filteredRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; padding: 20px;">此區間無任何紀錄</p>';
     }
 
-    // V21: Dashboard 精準邏輯（排除代墊雜費收入）
+    // 主畫面儀表板：總額包含所有收費
     function updateDashboard(filteredRecords) {
         let totalHours = 0, totalIncome = 0, totalDebt = 0;
         filteredRecords.forEach(record => {
             if (record.status !== 'leave') {
                 totalHours += parseFloat(record.hours || 0);
-                if(record.status === 'paid' && record.hours > 0) totalIncome += parseInt(record.fee || 0); // 只有學費算收入
-                if(record.status === 'unpaid') totalDebt += parseInt(record.fee || 0); // 欠費全算，因包含要討回的雜費
+                if(record.status === 'paid') totalIncome += parseInt(record.fee || 0); 
+                if(record.status === 'unpaid') totalDebt += parseInt(record.fee || 0); 
             }
         });
-        document.getElementById('total-hours').innerText = totalHours;
+        document.getElementById('total-hours').innerText = totalHours + 'h';
         document.getElementById('total-income').innerText = `$${totalIncome}`;
         document.getElementById('total-debt').innerText = `$${totalDebt}`;
     }
@@ -708,15 +752,15 @@
         container.innerHTML = '';
         const daysNameArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         if (fixedClasses.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999; padding:10px;">無固定課表。</p>';
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; padding:10px;">無固定課表。</p>';
             return;
         }
         fixedClasses.forEach((c, index) => {
             container.innerHTML += `
                 <div class="fixed-class-item">
                     <div style="flex:1;">
-                        <div style="font-weight:bold; color:#333;">🎓 ${c.student}</div>
-                        <div style="font-size:0.85em; color:#666;">每週${daysNameArr[parseInt(c.day)]} ${c.time} (${c.hours}h)</div>
+                        <div style="font-weight:800; color:#1e293b;">🎓 ${c.student}</div>
+                        <div style="font-size:0.85em; color:#64748b; font-weight:600;">每週${daysNameArr[parseInt(c.day)]} ${c.time} (${c.hours}h)</div>
                     </div>
                     <button class="settings-btn red" onclick="removeFixedClass(${index})">停課刪除</button>
                 </div>
@@ -732,23 +776,22 @@
 
     let currentModalTarget = null;
 
-    function openModal(payloadStr) {
+    // V22 優化：統一使用 Action Sheet 替代置中的 Modal
+    function openActionSheet(payloadStr) {
         currentModalTarget = JSON.parse(decodeURIComponent(payloadStr));
         const displayName = currentModalTarget.isExtraItem ? `💰雜費: ${currentModalTarget.note}` : currentModalTarget.student;
-        document.getElementById('modalTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
-        document.getElementById('modalMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
-        document.getElementById('actionModal').style.display = 'flex';
+        document.getElementById('actionSheetTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
+        document.getElementById('actionSheetMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
+        openSheet('actionSheet');
     }
     
-    function openModalFromList(index) {
+    function openActionSheetFromList(index) {
         currentModalTarget = { ...records[index], originalIndex: index };
         const displayName = records[index].hours === 0 ? `💰雜費: ${records[index].note}` : records[index].student;
-        document.getElementById('modalTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
-        document.getElementById('modalMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
-        document.getElementById('actionModal').style.display = 'flex';
+        document.getElementById('actionSheetTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
+        document.getElementById('actionSheetMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
+        openSheet('actionSheet');
     }
-
-    function closeModal() { document.getElementById('actionModal').style.display = 'none'; currentModalTarget = null; }
 
     function editRecord() {
         if (currentModalTarget.isExtraItem) { alert("雜費項目無法更改時數！"); return; }
@@ -759,13 +802,7 @@
             let newFee = newHours * rate;
             
             let ignoreIndex = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : -1;
-            
-            let hasConflict = null;
-            if (currentModalTarget.isFixedProjected) {
-                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
-            } else {
-                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
-            }
+            let hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
 
             if (hasConflict && !confirm(`⚠️ 警告：時數重疊衝突！是否強行儲存？`)) return;
             
@@ -777,7 +814,7 @@
                     records[index].hours = newHours; records[index].fee = newFee; records[index].rate = rate;
                 }
             }
-            saveToStorage(); renderApp(); closeModal();
+            saveToStorage(); renderApp(); closeAllSheets();
         }
     }
 
@@ -788,7 +825,7 @@
             const index = currentModalTarget.originalIndex;
             if (index !== undefined && index !== -1) records[index].status = newStatus;
         }
-        saveToStorage(); renderApp(); closeModal();
+        saveToStorage(); renderApp(); closeAllSheets();
     }
 
     function handleDelete() {
@@ -799,7 +836,7 @@
             const index = currentModalTarget.originalIndex;
             if (index !== undefined && index !== -1) records.splice(index, 1);
         }
-        saveToStorage(); renderApp(); closeModal();
+        saveToStorage(); renderApp(); closeAllSheets();
     }
 
     function deleteRecordDirectly(index) {
@@ -819,26 +856,21 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
-    // V21: 請款文字專業升級分類 (學費/雜費自動小計)
     function generateBillingMessage() {
         const student = document.getElementById('studentFilter').value;
         if (student === 'ALL') { alert("⚠️ 請先選擇特定學生！"); return; }
         const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
         if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
         
-        let tuitionTotal = 0;
-        let miscTotal = 0;
-        
+        let tuitionTotal = 0; let miscTotal = 0;
         let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
         
         unpaidRecords.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).forEach(r => {
             const [y, m, d] = r.date.split('-');
             if (r.hours === 0) {
-                miscTotal += r.fee;
-                msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
+                miscTotal += r.fee; msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
             } else {
-                tuitionTotal += r.fee;
-                msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
+                tuitionTotal += r.fee; msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
             }
         });
         
@@ -862,11 +894,11 @@
             csvContent += `${r.date},${r.time},${r.hours===0?'[雜費]'+r.note:r.student},${r.hours},${r.fee},${s},${r.note||''}\n`;
             if (r.status !== 'leave') {
                 totalHours += parseFloat(r.hours || 0);
-                if (r.status === 'paid' && r.hours > 0) totalPaid += parseInt(r.fee || 0);
+                if (r.status === 'paid') totalPaid += parseInt(r.fee || 0);
                 if (r.status === 'unpaid') totalUnpaid += parseInt(r.fee || 0);
             }
         });
-        csvContent += `\n實上總時數,${totalHours},小時\n淨收學費總額,${totalPaid},元\n待收總額(含雜費),${totalUnpaid},元\n`;
+        csvContent += `\n實上總時數,${totalHours},小時\n已收總收入,${totalPaid},元\n待收總額(含雜費),${totalUnpaid},元\n`;
         const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent));
         link.setAttribute("download", `家教財務報表.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
