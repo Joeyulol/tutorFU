@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V25</title>
+    <title>家教小幫手 V26</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 100px; }
@@ -28,7 +28,7 @@
         .dash-card p { margin: 0; font-size: 1.25em; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 4px; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        /* 底部導航列 */
+        /* V26：底部原生級導航列 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 90; border-radius: 20px 20px 0 0; }
         .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 0.75em; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform 0.1s;}
         .nav-item:active { transform: scale(0.9); }
@@ -107,7 +107,8 @@
 
         /* 系統設定列表 */
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
-        .settings-btn { background: #f1f5f9; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; color: #475569; }
+        .settings-btn { background: #f1f5f9; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; color: #475569; transition: background 0.1s;}
+        .settings-btn:active { transform: scale(0.96); }
         .settings-btn.red { background: #fee2e2; color: var(--danger); }
         .settings-btn.green { background: #dcfce7; color: var(--success); }
 
@@ -258,25 +259,19 @@
         <div class="sheet-title">⚙️ 系統設定與管理</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-
-    <div style="font-weight:800; margin-bottom:10px; color:#1e293b;">💬 產生對帳訊息</div>
-    <div class="settings-item">
-        <span style="font-weight:700; color:#475569;">產生 Line 請款文字 <span style="font-size:0.8em; color:#94a3b8; font-weight:normal;">(需選定單一學生)</span></span>
-        <button class="settings-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製</button>
-    </div>
     
-    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">🎓 固定課表管理</div>
-    <div id="fixedClassListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 5px; margin-bottom: 25px;"></div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b;">🎓 固定課表管理</div>
+    <div id="fixedClassListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 5px; margin-bottom: 20px;"></div>
     
-    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">⚡ 批次操作</div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">⚡ 快速批次操作</div>
     <div class="settings-item">
-        <span style="font-weight:700; color:#475569;">一鍵結清欠費 <span style="font-size:0.8em; color:#94a3b8; font-weight:normal;">(需選定單一學生)</span></span>
+        <span style="font-weight:700; color:#475569;">一鍵結清欠費 <br><span style="font-size:0.8em; color:#94a3b8; font-weight:normal;">(需先在畫面上方選定單一學生)</span></span>
         <button class="settings-btn green" onclick="batchSettleUnpaid()">💰 結清</button>
     </div>
 
-    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">💾 報表與備份</div>
+    <div style="font-weight:800; margin-bottom:10px; color:#1e293b; border-top: 2px solid #f1f5f9; padding-top: 15px;">💾 報表與資料備份</div>
     <div class="settings-item">
-        <span style="font-weight:700; color:#475569;">匯出 CSV 電腦版報表</span>
+        <span style="font-weight:700; color:#475569;">匯出 CSV 試算表</span>
         <button class="settings-btn" onclick="exportCSV()">📥 匯出</button>
     </div>
     <div class="settings-item">
@@ -309,13 +304,14 @@
     
     let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
     let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
-    let isIncomeVisible = false;
+    let isIncomeVisible = false; // 隱私狀態控制
 
     function saveToStorage() {
         localStorage.setItem('tutorClassesV18', JSON.stringify(fixedClasses));
         localStorage.setItem('tutorRecordsV18', JSON.stringify(records));
     }
 
+    // 計算下課時間
     function getEndTime(startStr, hours) {
         if (!startStr || !hours) return '';
         let [h, m] = startStr.split(':').map(Number);
@@ -323,6 +319,7 @@
         return `${String(Math.floor(totalMins / 60) % 24).padStart(2,'0')}:${String(Math.floor(totalMins % 60)).padStart(2,'0')}`;
     }
 
+    // 控制各種 Bottom Sheet 的滑出與關閉
     function closeAllSheets() {
         document.querySelectorAll('.bottom-sheet').forEach(sheet => sheet.classList.remove('show'));
         setTimeout(() => { 
@@ -336,6 +333,7 @@
         setTimeout(() => { document.getElementById(sheetId).classList.add('show'); }, 10);
     }
 
+    // 新增表單：選項卡切換
     function setFormType(type) {
         document.getElementById('typeInput').value = type;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
@@ -385,6 +383,7 @@
         }
     }
 
+    // 內部報表渲染 (完美隔離學費與雜費)
     function openReportSheet() {
         const studentF = document.getElementById('studentFilter').options[document.getElementById('studentFilter').selectedIndex].text;
         const timeF = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
@@ -438,17 +437,19 @@
 
             for (let name in stats) {
                 const s = stats[name];
+                const sPaid = s.tuitionPaid + s.miscPaid;
+                const sUnpaid = s.tuitionUnpaid + s.miscUnpaid;
                 container.innerHTML += `
                     <div class="student-stat-card">
                         <div class="student-stat-name">🎓 ${name}</div>
                         <div class="student-stat-row"><span>實上時數：</span><span>${s.hours}h</span></div>
                         <div class="student-stat-row">
-                            <span>學費淨收入：</span>
-                            <span>已收 <span style="color:var(--success); font-weight:bold;">$${s.tuitionPaid}</span> / 待收 <span style="color:var(--danger); font-weight:bold;">$${s.tuitionUnpaid}</span></span>
+                            <span>已收總額：</span>
+                            <span style="font-weight:800; color:var(--success);">$${sPaid} <span class="stat-sub">(學$${s.tuitionPaid}/雜$${s.miscPaid})</span></span>
                         </div>
                         <div class="student-stat-row">
-                            <span>雜費代墊款：</span>
-                            <span>已收 <span style="color:var(--success); font-weight:bold;">$${s.miscPaid}</span> / 待收 <span style="color:var(--danger); font-weight:bold;">$${s.miscUnpaid}</span></span>
+                            <span>待繳欠費：</span>
+                            <span style="font-weight:800; color:var(--danger);">$${sUnpaid} <span class="stat-sub">(學$${s.tuitionUnpaid}/雜$${s.miscUnpaid})</span></span>
                         </div>
                     </div>
                 `;
@@ -457,8 +458,12 @@
         openSheet('reportSheet');
     }
 
-    function openSettingsSheet() { renderFixedClassManageList(); openSheet('settingsSheet'); }
+    function openSettingsSheet() { 
+        renderFixedClassManageList(); 
+        openSheet('settingsSheet'); 
+    }
 
+    // 日期快速跳轉
     function jumpToDate(dateStr) {
         if(!dateStr) return;
         const [y, m, d] = dateStr.split('-');
@@ -481,6 +486,7 @@
         }, 100);
     }
 
+    // 點擊日曆空白處快速排課
     function handleCellClick(e, dateStr) {
         if (e.target.closest('.cal-class')) return; 
         setFormType('temp');
@@ -489,6 +495,7 @@
         openAddSheet();
     }
 
+    // 時段防撞偵測
     function timeToMins(timeStr) {
         if (!timeStr) return 0;
         const [h, m] = timeStr.split(':').map(Number);
@@ -564,6 +571,7 @@
         else if (match && match.fee) document.getElementById('rateInput').value = match.fee / match.hours;
     }
 
+    // 取得過濾後的紀錄 (修正週一為起點的邏輯)
     function getFilteredRecords() {
         const timeF = document.getElementById('timeFilter').value;
         const studentF = document.getElementById('studentFilter').value;
@@ -579,7 +587,7 @@
             if (timeF === 'month') return recDate.getMonth() === displayMonth && recDate.getFullYear() === displayYear;
             if (timeF === 'today') return r.date === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             if (timeF === 'week') {
-                const dayOfWeek = todayAtMidnight.getDay() || 7; 
+                const dayOfWeek = todayAtMidnight.getDay(); 
                 const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
                 const monday = new Date(todayAtMidnight); monday.setDate(todayAtMidnight.getDate() - dayOffset);
                 const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
@@ -589,6 +597,7 @@
         });
     }
 
+    // 控制儀表板隱私顯示
     function toggleIncomeVisibility() {
         isIncomeVisible = !isIncomeVisible;
         const filteredRecords = getFilteredRecords();
@@ -653,7 +662,6 @@
                 if (cls.status === 'paid') bgClass = 'cal-paid';
                 if (cls.status === 'leave') bgClass = 'cal-leave';
 
-                // V25 優化：日曆上的雜費補上學生名字
                 const isExtraItem = cls.hours === 0;
                 const displayName = isExtraItem ? `💰${cls.student}(${cls.note})` : `${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
@@ -694,10 +702,8 @@
             if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 已取消'; card.style.borderLeftColor = '#94a3b8'; }
 
             const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
-            
-            // V25 優化：帳單明細雜費補上學生名字
             const titleText = record.hours === 0 ? 
-                `📦 雜費代墊：${record.student} - ${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
+                `📦 代墊雜費：${record.student} - ${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
                 `🎓 ${record.student} (${record.hours} 小時) ${record.status !== 'leave' ? `<span style="color:var(--primary)">$${record.fee}</span>` : ''}`;
 
             const memoHTML = (record.note && record.hours > 0) ? `<div class="record-memo">📝 備註：${record.note}</div>` : '';
@@ -813,8 +819,6 @@
 
     function openActionSheet(payloadStr) {
         currentModalTarget = JSON.parse(decodeURIComponent(payloadStr));
-        
-        // V25 優化：Action sheet 的標題精確加上學生名字
         const displayName = currentModalTarget.isExtraItem ? `💰雜費: ${currentModalTarget.student}-${currentModalTarget.note}` : currentModalTarget.student;
         document.getElementById('actionSheetTitle').innerText = `📅 ${currentModalTarget.date} ${currentModalTarget.time}\n📌 ${displayName}`;
         document.getElementById('actionSheetMemo').innerText = (currentModalTarget.note && currentModalTarget.hours > 0) ? `📝 備註: ${currentModalTarget.note}` : '';
@@ -829,10 +833,9 @@
         openSheet('actionSheet');
     }
 
-    // 🛠️ V25 修復核心：修改時數與修改雜費邏輯分流
+    // 嚴格分流：雜費只能改金額，課程只能改時數
     function editRecord() {
         if (currentModalTarget.hours === 0) { 
-            // 它是雜費，只能改金額
             let newFee = prompt(`請輸入【${currentModalTarget.student}】${currentModalTarget.note} 的新代墊金額：`, currentModalTarget.fee);
             if (newFee && !isNaN(newFee)) {
                 newFee = Math.max(0, parseInt(newFee));
@@ -845,7 +848,6 @@
             return; 
         }
 
-        // 一般課程改時數
         let newHours = prompt(`請輸入新的上課時數：`, currentModalTarget.hours);
         if (newHours && !isNaN(newHours)) {
             newHours = parseFloat(newHours);
@@ -853,13 +855,7 @@
             let newFee = newHours * rate;
             
             let ignoreIndex = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : -1;
-            
-            let hasConflict = null;
-            if (currentModalTarget.isFixedProjected) {
-                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
-            } else {
-                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
-            }
+            let hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
 
             if (hasConflict && !confirm(`⚠️ 警告：時數重疊衝突！是否強行儲存？`)) return;
             
@@ -913,34 +909,6 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
-    function generateBillingMessage() {
-        const student = document.getElementById('studentFilter').value;
-        if (student === 'ALL') { alert("⚠️ 請先選擇特定學生！"); return; }
-        const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
-        if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
-        
-        let tuitionTotal = 0; let miscTotal = 0;
-        let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
-        
-        unpaidRecords.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).forEach(r => {
-            const [y, m, d] = r.date.split('-');
-            if (r.hours === 0) {
-                miscTotal += r.fee; msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
-            } else {
-                tuitionTotal += r.fee; msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
-            }
-        });
-        
-        msg += `\n`;
-        if (miscTotal > 0) {
-            msg += `📚 學費小計：$${tuitionTotal}\n`;
-            msg += `📦 代墊雜費：$${miscTotal}\n`;
-        }
-        msg += `💰 總計應繳：$${tuitionTotal + miscTotal} 元。\n再麻煩您確認了，謝謝！😊`;
-        
-        navigator.clipboard.writeText(msg).then(() => { alert("✅ 專業請款文字已複製！\n已自動為您拆分學費與雜費小計，快去 Line 貼上傳送吧。"); closeAllSheets();});
-    }
-
     function exportCSV() {
         const exportRecords = getFilteredRecords();
         if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
@@ -951,8 +919,6 @@
         exportRecords.forEach(r => {
             let s = r.status==='paid'?'已收費':r.status==='unpaid'?'未收費':r.status==='leave'?'已請假':'待上課';
             let feeType = r.hours > 0 ? '學費' : '代墊雜費';
-            
-            // V25 優化：CSV 報表內的雜費名字也要顯示出來
             let name = r.hours === 0 ? `[雜費]${r.student}-${r.note}` : r.student;
             
             csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${r.note||''},${feeType}\n`;
