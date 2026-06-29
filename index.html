@@ -7,9 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V19</title>
+    <title>家教小幫手 V20</title>
     <style>
-        /* 現代化極簡 UI 樣式 */
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f4f7f9; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
         .container { max-width: 600px; margin: auto; }
@@ -26,7 +25,7 @@
         .card p { margin: 0; font-size: 1.2em; font-weight: bold; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        /* 主畫面精簡三大按鈕 */
+        /* 極簡主操作按鈕 */
         .main-actions { display: flex; gap: 8px; margin-bottom: 15px; }
         .btn-main { flex: 1; padding: 12px 5px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9em; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); transition: transform 0.1s;}
         .btn-main:active { transform: scale(0.96); }
@@ -54,9 +53,8 @@
 
         /* 日曆區塊 */
         .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; }
-        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; }
+        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.2em; color: var(--primary); cursor: pointer; border-bottom: 2px dashed var(--primary); padding-bottom: 2px;}
-        /* 隱藏式日期選擇器 */
         .jump-date-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
         .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #666; font-weight: 600;}
@@ -67,6 +65,7 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #e0e0e0; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
         .cal-day-name { background: #607d8b; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: bold; }
         .cal-cell { background: white; min-height: 95px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .cal-cell:active { background: #f0f4f8; }
         .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; pointer-events: none; }
         .cal-date { color: #555; width: 20px; text-align: center; border-radius: 4px;}
         .cal-day-hours { color: var(--primary); font-size: 0.85em; background: #e3f2fd; padding: 2px 4px; border-radius: 4px;}
@@ -91,20 +90,21 @@
         .badge-leave { background: #f5f5f5; color: #616161; }
         .badge-pending { background: #e3f2fd; color: #1565c0; }
 
-        /* 設定表單中的選項 */
+        /* 系統設定列表 */
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
         .settings-btn { background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #333; }
         .settings-btn.red { background: #ffebee; color: var(--danger); }
         .settings-btn.green { background: #e8f5e9; color: var(--success); }
 
-        /* 模態視窗通用 */
-        #actionModal, #receiptModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
+        /* V20 手機內部對帳專用卡片 */
+        .student-stat-card { background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .student-stat-name { font-weight: bold; font-size: 1.1em; color: #2c3e50; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;}
+        .student-stat-row { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px; }
+
+        /* 模態視窗 */
+        #actionModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
         .modal-content { background:white; padding:25px; width:85%; max-width:350px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
         .modal-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; }
-
-        /* 手機收據專屬美化樣式 */
-        .receipt-card-view { text-align: left; background: #fff; border: 2px dashed #bbb; padding: 15px; border-radius: 10px; margin: 15px 0; max-height: 280px; overflow-y: auto; }
-        .receipt-item { display: flex; justify-content: space-between; font-size: 0.85em; padding: 6px 0; border-bottom: 1px dotted #eee; }
     </style>
 </head>
 <body>
@@ -124,20 +124,18 @@
         </select>
     </div>
 
-    <!-- 頂部概覽儀表板 -->
     <div class="dashboard">
         <div class="card"><h4>總時數</h4><p id="total-hours" class="text-blue">0</p></div>
         <div class="card"><h4>已收費</h4><p id="total-income" class="text-green">$0</p></div>
         <div class="card"><h4>待收費</h4><p id="total-debt" class="text-orange">$0</p></div>
     </div>
 
-    <!-- V19 極簡化：三大核心功能按鈕 -->
     <div class="main-actions">
         <button class="btn-main bg-blue" onclick="openReportSheet()">
-            <span style="font-size:1.4em;">📊</span> 財務報表
+            <span style="font-size:1.4em;">📊</span> 內部報表
         </button>
         <button class="btn-main bg-orange" onclick="openBillingSheet()">
-            <span style="font-size:1.4em;">💬</span> 請款對帳
+            <span style="font-size:1.4em;">💬</span> 複製請款
         </button>
         <button class="btn-main bg-gray" onclick="openSettingsSheet()">
             <span style="font-size:1.4em;">⚙️</span> 系統設定
@@ -146,7 +144,6 @@
 
     <div class="calendar-nav-bar">
         <button class="btn-nav" onclick="changeMonth(-1)">◀</button>
-        <!-- V19 新功能 1：隱藏式快速跳轉日期 -->
         <div class="calendar-header-wrapper">
             <span id="calendarMonth"></span> ▾
             <input type="date" id="jumpDateInput" class="jump-date-input" onchange="jumpToDate(this.value)">
@@ -169,7 +166,6 @@
 
 <div class="fab" onclick="openAddSheet()">+</div>
 
-<!-- 新增表單 Bottom Sheet -->
 <div class="bottom-sheet-overlay" id="overlay" onclick="closeAllSheets()"></div>
 
 <div class="bottom-sheet" id="addSheet">
@@ -220,65 +216,55 @@
     <button class="btn-add" onclick="addClass()">儲存項目</button>
 </div>
 
-<!-- V19 新功能 2：老闆專屬財務報表 Sheet -->
 <div class="bottom-sheet" id="reportSheet">
     <div class="sheet-header">
-        <div class="sheet-title">📊 財務報表總覽</div>
+        <div class="sheet-title">📊 內部財務報表</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <div style="background:#f4f7f9; padding:15px; border-radius:12px; margin-bottom:15px;">
-        <div style="font-size:0.85em; color:#666; margin-bottom:8px;">目前統計條件：<span id="reportFilterStatus" style="font-weight:bold; color:var(--primary);"></span></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <span>✅ 實上總時數：</span><span style="font-weight:bold;" id="reportTotalHours"></span>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <span>💰 已收總收入：</span><span style="font-weight:bold; color:var(--success);" id="reportTotalPaid"></span>
-        </div>
-        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:5px; margin-top:5px;">
-            <span>⚠️ 應收未收欠費：</span><span style="font-weight:bold; color:var(--danger);" id="reportTotalUnpaid"></span>
-        </div>
+    <div style="font-size:0.85em; color:#666; margin-bottom:10px; text-align:center;">
+        目前統計區間：<span id="reportFilterStatus" style="font-weight:bold; color:var(--primary);"></span>
     </div>
-    <button class="modal-btn" style="background:#607d8b; color:white;" onclick="exportCSV()">📥 下載完整 CSV 備份報表</button>
+    <div id="reportStudentCardsContainer" style="margin-bottom: 20px;"></div>
 </div>
 
-<!-- 請款收據 Sheet -->
 <div class="bottom-sheet" id="billingSheet">
     <div class="sheet-header">
-        <div class="sheet-title">💬 請款與對帳單</div>
+        <div class="sheet-title">💬 產生請款訊息</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <p style="font-size:0.85em; color:#666; margin-bottom:15px;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算他尚未繳交的費用。</p>
-    <button class="modal-btn" style="background:#673ab7; color:white;" onclick="openReceiptModal()">🧾 產生手機圖片收據卡</button>
+    <p style="font-size:0.9em; color:#555; margin-bottom:15px; line-height: 1.5;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算他尚未繳交的費用，並為您產生適合貼到 Line 的文字明細。</p>
     <button class="modal-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製 Line 請款文字</button>
 </div>
 
-<!-- 系統設定與管理 Sheet -->
 <div class="bottom-sheet" id="settingsSheet">
     <div class="sheet-header">
-        <div class="sheet-title">⚙️ 系統與資料管理</div>
+        <div class="sheet-title">⚙️ 系統設定與管理</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
     
-    <div style="font-weight:bold; margin-bottom:10px; color:#555;">固定課表管理</div>
+    <div style="font-weight:bold; margin-bottom:10px; color:#555;">🎓 固定課表管理</div>
     <div id="fixedClassListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #eee; border-radius: 8px; padding: 5px; margin-bottom: 20px;"></div>
     
-    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">批次操作</div>
+    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">⚡ 批次操作</div>
     <div class="settings-item">
         <span>一鍵結清欠費 <span style="font-size:0.75em; color:#999;">(需先選擇單一學生)</span></span>
         <button class="settings-btn green" onclick="batchSettleUnpaid()">💰 結清</button>
     </div>
 
-    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">資料庫庫備份 (重要)</div>
+    <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">💾 資料備份與報表</div>
     <div class="settings-item">
-        <span>下載雲端備份檔</span>
+        <span>匯出 CSV 表格檔案</span>
+        <button class="settings-btn" onclick="exportCSV()">📥 匯出</button>
+    </div>
+    <div class="settings-item">
+        <span>下載系統雲端備份檔</span>
         <button class="settings-btn" onclick="backupData()">☁️ 下載</button>
     </div>
     <div style="margin-top:5px; font-size:0.8em; color:#666;">
-        還原資料：<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)" style="padding:0; border:none; background:transparent; margin-top:5px;">
+        🔄 還原資料：<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)" style="padding:0; border:none; background:transparent; margin-top:5px;">
     </div>
 </div>
 
-<!-- 課程操作 Modal -->
 <div id="actionModal">
     <div class="modal-content">
         <div id="modalTitle" class="modal-title"></div>
@@ -289,24 +275,6 @@
         <button class="modal-btn" style="background:#757575; color:white;" onclick="updateStatus('leave')">💤 標記：學生請假/取消</button>
         <button class="modal-btn" style="background:var(--danger); color:white;" onclick="handleDelete()">🗑️ 徹底刪除紀錄</button>
         <button class="modal-btn" style="background:#f5f5f5; color:#333;" onclick="closeModal()">返回</button>
-    </div>
-</div>
-
-<!-- 手機專用收據彈出視窗 -->
-<div id="receiptModal">
-    <div class="modal-content" style="max-width: 400px; width: 90%;">
-        <div style="font-size: 1.3em; font-weight: bold; color: #673ab7; margin-bottom: 5px;">🧾 家教對帳電子明細</div>
-        <div id="receiptStudentHeader" style="font-weight: bold; font-size: 1.05em; color: #333;"></div>
-        <div id="receiptTimeHeader" style="font-size: 0.85em; color: #666; margin-bottom: 10px;"></div>
-        
-        <div class="receipt-card-view" id="receiptItemsContainer"></div>
-        
-        <div style="text-align: right; font-weight: bold; font-size: 1em; margin-bottom: 15px; line-height: 1.5;">
-            <span style="color:var(--success)">已結清項目：<span id="receiptPaidSum">$0</span></span><br>
-            <span style="color:var(--danger)">本次應繳欠費：<span id="receiptUnpaidSum">$0</span></span>
-        </div>
-        <div style="font-size: 0.75em; color: #999; margin-bottom: 15px; text-align: center;">💡 提示：您可以直接在手機上「螢幕截圖」傳送給家長。</div>
-        <button class="modal-btn" style="background:#673ab7; color:white; margin-bottom: 0;" onclick="closeReceiptModal()">關閉預覽</button>
     </div>
 </div>
 
@@ -352,37 +320,70 @@
         openSheet('addSheet');
     }
 
+    // V20 新功能：動態生成手機專用老闆財報
     function openReportSheet() {
         const studentF = document.getElementById('studentFilter').options[document.getElementById('studentFilter').selectedIndex].text;
         const timeF = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
         document.getElementById('reportFilterStatus').innerText = `${timeF} / ${studentF}`;
         
-        document.getElementById('reportTotalHours').innerText = document.getElementById('total-hours').innerText + " 小時";
-        document.getElementById('reportTotalPaid').innerText = document.getElementById('total-income').innerText;
-        document.getElementById('reportTotalUnpaid').innerText = document.getElementById('total-debt').innerText;
-        
+        const filteredRecords = getFilteredRecords();
+        const container = document.getElementById('reportStudentCardsContainer');
+        container.innerHTML = '';
+
+        if(filteredRecords.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999;">此區間無任何帳務紀錄。</p>';
+        } else {
+            let stats = {};
+            let totalAllHours = 0, totalAllPaid = 0, totalAllUnpaid = 0;
+
+            filteredRecords.forEach(r => {
+                if(r.status === 'leave') return;
+                let name = r.student;
+                if(!stats[name]) stats[name] = { hours: 0, paid: 0, unpaid: 0 };
+                
+                stats[name].hours += parseFloat(r.hours || 0);
+                totalAllHours += parseFloat(r.hours || 0);
+
+                if(r.status === 'paid') { stats[name].paid += parseInt(r.fee || 0); totalAllPaid += parseInt(r.fee || 0); }
+                if(r.status === 'unpaid') { stats[name].unpaid += parseInt(r.fee || 0); totalAllUnpaid += parseInt(r.fee || 0); }
+            });
+
+            // 渲染總計卡片
+            container.innerHTML += `
+                <div class="student-stat-card" style="border-left: 5px solid var(--primary); background: #fff;">
+                    <div class="student-stat-name">🌟 總計 (選定區間)</div>
+                    <div class="student-stat-row"><span>實上總時數：</span><span style="font-weight:bold;">${totalAllHours}h</span></div>
+                    <div class="student-stat-row"><span>已收總收入：</span><span style="font-weight:bold; color:var(--success);">$${totalAllPaid}</span></div>
+                    <div class="student-stat-row"><span>應收總欠費：</span><span style="font-weight:bold; color:var(--danger);">$${totalAllUnpaid}</span></div>
+                </div>
+            `;
+
+            // 渲染每個學生的卡片
+            for (let name in stats) {
+                container.innerHTML += `
+                    <div class="student-stat-card">
+                        <div class="student-stat-name">🎓 ${name}</div>
+                        <div class="student-stat-row"><span>上課時數：</span><span>${stats[name].hours}h</span></div>
+                        <div class="student-stat-row"><span>已收金額：</span><span style="color:var(--success);">$${stats[name].paid}</span></div>
+                        <div class="student-stat-row"><span>待繳欠費：</span><span style="font-weight:bold; color:var(--danger);">$${stats[name].unpaid}</span></div>
+                    </div>
+                `;
+            }
+        }
         openSheet('reportSheet');
     }
 
-    function openBillingSheet() {
-        openSheet('billingSheet');
-    }
+    function openBillingSheet() { openSheet('billingSheet'); }
+    function openSettingsSheet() { renderFixedClassManageList(); openSheet('settingsSheet'); }
 
-    function openSettingsSheet() {
-        renderFixedClassManageList();
-        openSheet('settingsSheet');
-    }
-
-    // V19 新功能：快速跳轉日期
     function jumpToDate(dateStr) {
         if(!dateStr) return;
         const [y, m, d] = dateStr.split('-');
         displayYear = parseInt(y);
         displayMonth = parseInt(m) - 1;
-        document.getElementById('timeFilter').value = 'month'; // 自動切換回本月檢視以看到日曆
+        document.getElementById('timeFilter').value = 'month'; 
         renderApp();
         
-        // 閃爍選中的日期特效
         setTimeout(() => {
             const cells = document.querySelectorAll('.cal-date');
             cells.forEach(span => {
@@ -401,7 +402,6 @@
         }, 100);
     }
 
-    // V19 新功能：點擊日曆格子快速排課
     function handleCellClick(e, dateStr) {
         if (e.target.closest('.cal-class')) return; 
         document.getElementById('typeInput').value = 'temp';
@@ -411,83 +411,58 @@
         openAddSheet();
     }
 
-    // --- 對帳收據生成器 ---
-    function openReceiptModal() {
-        closeAllSheets();
-        const studentF = document.getElementById('studentFilter').value;
-        const timeF = document.getElementById('timeFilter').value;
-        const filtered = getFilteredRecords();
-        
-        if (studentF === 'ALL') {
-            alert('⚠️ 請先在畫面上方下拉選單選擇「特定的學生」，才能產生該學生的對帳單！');
-            return;
-        }
-
-        document.getElementById('receiptStudentHeader').innerText = `🧑‍🎓 學生姓名：${studentF}`;
-        const timeLabels = { month: '本月區間明細', week: '本週區間明細', today: '今日即時明細', all: '歷史完整明細' };
-        document.getElementById('receiptTimeHeader').innerText = `📅 帳單統計：${displayYear}年${displayMonth+1}月 (${timeLabels[timeF] || ''})`;
-        
-        const container = document.getElementById('receiptItemsContainer');
-        container.innerHTML = '';
-        let paidSum = 0, unpaidSum = 0;
-        
-        filtered.sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||'')).forEach(r => {
-            if(r.status !== 'leave') {
-                if(r.status === 'paid') paidSum += r.fee;
-                if(r.status === 'unpaid') unpaidSum += r.fee;
-            }
-            let statusText = r.status === 'paid' ? '已結清' : (r.status === 'unpaid' ? '待繳' : (r.status==='leave'?'已取消':'待上課'));
-            let statusColor = r.status === 'paid' ? 'var(--success)' : (r.status === 'unpaid' ? 'var(--danger)' : '#777');
-            let nameText = r.hours === 0 ? `[雜費]${r.note}` : `${r.student} (${r.hours}h)${r.note?'-'+r.note:''}`;
-            let dateMD = r.date.split('-')[1] + '/' + r.date.split('-')[2];
-            
-            container.innerHTML += `
-                <div class="receipt-item">
-                    <span>🟢 ${dateMD} ${r.time||''} ${nameText}</span>
-                    <span style="font-weight:bold; color:${statusColor}">$${r.fee} (${statusText})</span>
-                </div>
-            `;
-        });
-        
-        if(filtered.length === 0) container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">當前篩選條件下無任何帳務紀錄。</p>';
-        
-        document.getElementById('receiptPaidSum').innerText = `$${paidSum}`;
-        document.getElementById('receiptUnpaidSum').innerText = `$${unpaidSum}`;
-        document.getElementById('receiptModal').style.display = 'flex';
-    }
-
-    function closeReceiptModal() { document.getElementById('receiptModal').style.display = 'none'; }
-
     function timeToMins(timeStr) {
         if (!timeStr) return 0;
         const [h, m] = timeStr.split(':').map(Number);
         return h * 60 + m;
     }
 
-    function checkTimeConflict(date, time, hours, ignoreRecordIndex = -1, ignoreFixedStudent = null) {
-        if (!time || hours <= 0) return null;
+    // 🛠 V20 修復核心：徹底解耦固定與臨時課的防撞邏輯
+    function checkTimeConflict(type, targetDateOrDay, time, hours, ignoreRecordIndex = -1) {
         const startMins = timeToMins(time);
         const endMins = startMins + parseFloat(hours) * 60;
 
-        const conflictRec = records.find((r, idx) => {
-            if (idx === ignoreRecordIndex || r.date !== date || r.status === 'leave' || r.hours === 0) return false;
-            const rStart = timeToMins(r.time);
-            const rEnd = rStart + parseFloat(r.hours) * 60;
-            return (startMins < rEnd && endMins > rStart);
-        });
-        if (conflictRec) return conflictRec.student;
+        if (type === 'fixed') {
+            const dayOfWeek = targetDateOrDay.toString(); // 這裡傳入的是 0~6
+            const conflictFixed = fixedClasses.find(c => {
+                if (c.day !== dayOfWeek) return false;
+                const cStart = timeToMins(c.time);
+                const cEnd = cStart + parseFloat(c.hours) * 60;
+                return (startMins < cEnd && endMins > cStart);
+            });
+            if (conflictFixed) return conflictFixed.student;
+            return null;
+        } else {
+            const dateStr = targetDateOrDay; // 這裡傳入的是 YYYY-MM-DD
+            
+            // 透過安全拆解來獲得本地的星期幾
+            const [y, m, d] = dateStr.split('-');
+            const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+            const dayOfWeek = dateObj.getDay().toString();
 
-        const dateObj = new Date(date);
-        const dayOfWeek = dateObj.getDay().toString();
-        const conflictFixed = fixedClasses.find(c => {
-            if (c.day !== dayOfWeek || c.student === ignoreFixedStudent) return false;
-            if (records.some(r => r.date === date && r.student === c.student && r.time === c.time)) return false;
-            const cStart = timeToMins(c.time);
-            const cEnd = cStart + parseFloat(c.hours) * 60;
-            return (startMins < cEnd && endMins > cStart);
-        });
-        if (conflictFixed) return conflictFixed.student;
-        return null;
+            // 檢查是否與實體紀錄衝突
+            const conflictRec = records.find((r, idx) => {
+                if (idx === ignoreRecordIndex || r.date !== dateStr || r.status === 'leave' || r.hours === 0) return false;
+                const rStart = timeToMins(r.time);
+                const rEnd = rStart + parseFloat(r.hours) * 60;
+                return (startMins < rEnd && endMins > rStart);
+            });
+            if (conflictRec) return conflictRec.student;
+
+            // 檢查是否與固定預排衝突
+            const conflictFixed = fixedClasses.find(c => {
+                if (c.day !== dayOfWeek) return false;
+                // 如果這堂固定課已經被實體化（無論是上課還是請假），就不檢查固定課本體
+                if (records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time)) return false;
+                
+                const cStart = timeToMins(c.time);
+                const cEnd = cStart + parseFloat(c.hours) * 60;
+                return (startMins < cEnd && endMins > cStart);
+            });
+            if (conflictFixed) return conflictFixed.student;
+
+            return null;
+        }
     }
 
     function toggleFormFields() {
@@ -654,7 +629,7 @@
             let badgeClass = 'badge-pending'; let badgeText = '待上課';
             if(record.status === 'paid') { badgeClass = 'badge-paid'; badgeText = '✅ 已收費'; card.style.borderLeftColor = 'var(--success)'; }
             if(record.status === 'unpaid') { badgeClass = 'badge-unpaid'; badgeText = '⚠️ 待收費'; card.style.borderLeftColor = 'var(--warning)'; }
-            if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 已請假/取消'; card.style.borderLeftColor = '#9e9e9e'; }
+            if(record.status === 'leave') { badgeClass = 'badge-leave'; badgeText = '💤 已取消'; card.style.borderLeftColor = '#9e9e9e'; }
 
             const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
             const titleText = record.hours === 0 ? 
@@ -677,7 +652,7 @@
             `;
             recordList.appendChild(card);
         });
-        if(filteredRecords.length === 0) recordList.innerHTML = '<p style="color:#aaa; text-align:center; padding: 20px;">此區間目前沒有任何紀錄</p>';
+        if(filteredRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">此區間無任何紀錄</p>';
     }
 
     function updateDashboard(filteredRecords) {
@@ -709,23 +684,16 @@
                 const day = document.getElementById('dayInput').value;
                 if(!time || hours<=0 || rate<=0) { alert('請完整填寫時間與時薪！'); return; }
                 
-                const startMins = timeToMins(time);
-                const endMins = startMins + hours * 60;
-                const conflict = fixedClasses.find(c => {
-                    if (c.day !== day) return false;
-                    const cStart = timeToMins(c.time);
-                    const cEnd = cStart + parseFloat(c.hours) * 60;
-                    return (startMins < cEnd && endMins > cStart);
-                });
-                if (conflict && !confirm(`⚠️ 警告：該時段與【${conflict.student}】的固定預排課程衝突！`)) return;
+                let hasConflict = checkTimeConflict('fixed', day, time, hours, -1);
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的固定課程衝突！是否仍要排定？`)) return;
                 
                 fixedClasses.push({ day, time, student, hours, rate, note: memo });
             } else {
                 const date = document.getElementById('dateInput').value;
                 if(!date || !time || hours<=0 || rate<=0) { alert('請完整填寫項目！'); return; }
 
-                let hasConflict = checkTimeConflict(date, time, hours, -1);
-                if (hasConflict && !confirm(`⚠️ 警告：該時段與當天【${hasConflict}】的課程衝突！`)) return;
+                let hasConflict = checkTimeConflict('temp', date, time, hours, -1);
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與當天【${hasConflict}】的課程衝突！是否仍要排定？`)) return;
 
                 records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo });
             }
@@ -799,9 +767,15 @@
             let newFee = newHours * rate;
             
             let ignoreIndex = currentModalTarget.originalIndex !== undefined ? currentModalTarget.originalIndex : -1;
-            let ignoreFixedStudent = currentModalTarget.isFixedProjected ? currentModalTarget.student : null;
             
-            let hasConflict = checkTimeConflict(currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex, ignoreFixedStudent);
+            let hasConflict = null;
+            if (currentModalTarget.isFixedProjected) {
+                // 如果是編輯還沒實現的固定課，當作是在那天加一堂臨時課來檢查
+                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
+            } else {
+                hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
+            }
+
             if (hasConflict && !confirm(`⚠️ 警告：時數重疊衝突！是否強行儲存？`)) return;
             
             if (currentModalTarget.isFixedProjected) {
@@ -846,7 +820,7 @@
         const student = document.getElementById('studentFilter').value;
         if (student === 'ALL') { alert("⚠️ 請先在畫面上方選擇「特定學生」，再執行一鍵結清。"); return; }
         const filtered = getFilteredRecords().filter(r => r.status === 'unpaid');
-        if (filtered.length === 0) return;
+        if (filtered.length === 0) { alert('沒有欠費喔！'); return; }
         if (!confirm(`確認要結清 ${student} 的所有欠費嗎？`)) return;
         filtered.forEach(record => {
             const index = records.indexOf(record); if (index !== -1) records[index].status = 'paid';
