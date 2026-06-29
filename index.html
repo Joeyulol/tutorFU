@@ -7,10 +7,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V23</title>
+    <title>家教小幫手 V24</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
-        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
+        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 100px; /* 留出底部導航列空間 */ }
         .container { max-width: 600px; margin: auto; }
         
         h2 { text-align: center; color: #1e293b; margin-top: 5px; font-size: 1.6em; font-weight: 800; letter-spacing: 1px; }
@@ -22,18 +22,22 @@
         .filter-select:focus { border-color: var(--primary); outline: none; }
         
         .dashboard { display: flex; gap: 10px; text-align: center; }
-        .dash-card { flex: 1; background: #f8fafc; padding: 12px 5px; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .dash-card { flex: 1; background: #f8fafc; padding: 12px 5px; border-radius: 12px; border: 1px solid #f1f5f9; transition: background 0.2s; }
+        .dash-card.clickable:active { background: #e2e8f0; }
         .dash-card h4 { margin: 0 0 6px 0; font-size: 0.75em; color: #64748b; font-weight: 700; }
-        .dash-card p { margin: 0; font-size: 1.25em; font-weight: 800; }
+        .dash-card p { margin: 0; font-size: 1.25em; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 4px; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        .main-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .btn-main { padding: 12px 5px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.9em; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.1s;}
-        .btn-main:active { transform: scale(0.95); }
-        .bg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .bg-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .bg-gray { background: linear-gradient(135deg, #64748b, #475569); }
+        /* V24 底部導航列 (Bottom Navigation) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 90; border-radius: 20px 20px 0 0; }
+        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 0.75em; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform 0.1s;}
+        .nav-item:active { transform: scale(0.9); }
+        .nav-icon { font-size: 1.6em; }
+        .nav-fab-container { position: relative; top: -15px; }
+        .nav-fab { width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 6px 16px rgba(37,99,235,0.4); cursor: pointer; transition: transform 0.1s;}
+        .nav-fab:active { transform: scale(0.9); }
 
+        /* 底部滑出視窗通用 */
         .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 99; transition: opacity 0.3s; backdrop-filter: blur(3px);}
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 20px 24px 30px; box-sizing: border-box; z-index: 100; transition: bottom 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 -5px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
         .bottom-sheet.show { bottom: 0; }
@@ -41,10 +45,12 @@
         .sheet-title { font-weight: 800; font-size: 1.25em; color: #1e293b; }
         .btn-close { background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #64748b; display: flex; justify-content: center; align-items: center;}
 
+        /* 選項卡 Segmented Control */
         .segment-control { display: flex; background: #e2e8f0; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
         .segment-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 0.9em; font-weight: 700; color: #64748b; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .segment-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
+        /* 表單樣式 */
         .input-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;}
         .input-group { flex: 1; min-width: 45%; }
         label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.85em; color: #475569; }
@@ -52,9 +58,7 @@
         input:focus, select:focus { border-color: var(--primary); outline: none; background: white;}
         .btn-add { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3);}
 
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 32px; box-shadow: 0 6px 20px rgba(37,99,235,0.4); cursor: pointer; z-index: 50; transition: transform 0.1s; }
-        .fab:active { transform: scale(0.9); }
-
+        /* 日曆區塊 */
         .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 10px 15px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .btn-nav { background: #f1f5f9; color: #475569; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; }
         .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.25em; color: var(--primary); cursor: pointer; padding: 4px 8px; border-radius:8px;}
@@ -79,6 +83,7 @@
         .class-time { font-weight: 800; background: rgba(0,0,0,0.15); border-radius: 4px; display: block; margin-bottom: 3px; font-size: 0.85em; padding: 1px 0;}
         .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #94a3b8; }
 
+        /* 列表卡片 */
         .record-card { border: 1px solid #f1f5f9; border-radius: 14px; padding: 16px; margin-bottom: 12px; background: white; border-left: 6px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #64748b; font-weight: 700;}
         .record-title { font-weight: 800; font-size: 1.1em; color: #1e293b; margin-bottom: 6px; }
@@ -93,17 +98,20 @@
         .badge-leave { background: #f1f5f9; color: #475569; }
         .badge-pending { background: #eff6ff; color: #1d4ed8; }
 
+        /* 財務卡片 */
         .student-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
         .student-stat-name { font-weight: 800; font-size: 1.15em; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;}
         .student-stat-row { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 6px; color:#475569; font-weight:600;}
         .stat-sub { font-size: 0.8em; color: #94a3b8; font-weight: normal; margin-left: 5px; }
         .section-title { font-size: 0.9em; font-weight: 800; color: #94a3b8; letter-spacing: 1px; margin: 15px 0 8px 0; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
 
+        /* 系統設定列表 */
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
         .settings-btn { background: #f1f5f9; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; color: #475569; }
         .settings-btn.red { background: #fee2e2; color: var(--danger); }
         .settings-btn.green { background: #dcfce7; color: var(--success); }
 
+        /* Action Sheet */
         .action-sheet-btn { width: 100%; padding: 16px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 1.05em; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);}
     </style>
 </head>
@@ -125,22 +133,20 @@
             </select>
         </div>
         <div class="dashboard">
-            <div class="dash-card"><h4>總計時數</h4><p id="total-hours" class="text-blue">0h</p></div>
-            <div class="dash-card"><h4>淨收學費</h4><p id="total-income" class="text-green">$0</p></div>
-            <div class="dash-card"><h4>待收學費</h4><p id="total-debt" class="text-orange">$0</p></div>
+            <div class="dash-card">
+                <h4>實上時數</h4>
+                <p id="total-hours" class="text-blue">0h</p>
+            </div>
+            <!-- V24: 隱私遮罩卡片，點擊切換顯示/隱藏 -->
+            <div class="dash-card clickable" onclick="toggleIncomeVisibility()">
+                <h4>淨收學費</h4>
+                <p id="total-income" class="text-green">****</p>
+            </div>
+            <div class="dash-card">
+                <h4>待收總額</h4>
+                <p id="total-debt" class="text-orange">$0</p>
+            </div>
         </div>
-    </div>
-
-    <div class="main-actions">
-        <button class="btn-main bg-blue" onclick="openReportSheet()">
-            <span style="font-size:1.6em;">📊</span> 內部報表
-        </button>
-        <button class="btn-main bg-orange" onclick="openBillingSheet()">
-            <span style="font-size:1.6em;">💬</span> 複製請款
-        </button>
-        <button class="btn-main bg-gray" onclick="openSettingsSheet()">
-            <span style="font-size:1.6em;">⚙️</span> 系統設定
-        </button>
     </div>
 
     <div class="calendar-nav-bar">
@@ -165,10 +171,25 @@
     <div id="recordList"></div>
 </div>
 
-<div class="fab" onclick="openAddSheet()">+</div>
+<!-- V24 底部導航列 (App 級體驗) -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="openReportSheet()">
+        <span class="nav-icon">📊</span>
+        <span>報表</span>
+    </div>
+    <div class="nav-fab-container">
+        <div class="nav-fab" onclick="openAddSheet()">+</div>
+    </div>
+    <div class="nav-item" onclick="openSettingsSheet()">
+        <span class="nav-icon">⚙️</span>
+        <span>設定</span>
+    </div>
+</div>
 
+<!-- 所有底部滑出視窗的共用遮罩 -->
 <div class="bottom-sheet-overlay" id="overlay" onclick="closeAllSheets()"></div>
 
+<!-- 新增表單 Bottom Sheet -->
 <div class="bottom-sheet" id="addSheet">
     <div class="sheet-header">
         <div class="sheet-title" id="sheetFormTitle">➕ 排定新課程/項目</div>
@@ -186,7 +207,14 @@
         <div class="input-group">
             <label>選擇星期幾</label>
             <select id="dayInput">
-                <option value="0">星期日</option><option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option><option value="6">星期六</option>
+                <!-- V24 調整：符合一到日邏輯 -->
+                <option value="1">星期一</option>
+                <option value="2">星期二</option>
+                <option value="3">星期三</option>
+                <option value="4">星期四</option>
+                <option value="5">星期五</option>
+                <option value="6">星期六</option>
+                <option value="0">星期日</option>
             </select>
         </div>
     </div>
@@ -219,6 +247,7 @@
     <button class="btn-add" onclick="addClass()">儲存項目</button>
 </div>
 
+<!-- 內部對帳儀表板 Sheet -->
 <div class="bottom-sheet" id="reportSheet">
     <div class="sheet-header">
         <div class="sheet-title">📊 內部財務總覽</div>
@@ -230,15 +259,7 @@
     <div id="reportStudentCardsContainer" style="margin-bottom: 10px;"></div>
 </div>
 
-<div class="bottom-sheet" id="billingSheet">
-    <div class="sheet-header">
-        <div class="sheet-title">💬 產生請款訊息</div>
-        <button class="btn-close" onclick="closeAllSheets()">×</button>
-    </div>
-    <p style="font-size:0.95em; color:#475569; margin-bottom:20px; line-height: 1.6; font-weight:600;">請先在上方「所有學生」中選擇特定的學生，系統會為您精準拆分學費與代墊雜費，並產生專業的 Line 明細。</p>
-    <button class="action-sheet-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製 Line 請款文字</button>
-</div>
-
+<!-- 系統設定與管理 Sheet -->
 <div class="bottom-sheet" id="settingsSheet">
     <div class="sheet-header">
         <div class="sheet-title">⚙️ 系統設定與管理</div>
@@ -268,6 +289,7 @@
     </div>
 </div>
 
+<!-- 操作選單 Action Sheet -->
 <div class="bottom-sheet" id="actionSheet">
     <div class="sheet-header" style="margin-bottom:10px;">
         <div class="sheet-title" id="actionSheetTitle">操作項目</div>
@@ -289,6 +311,7 @@
     
     let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
     let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
+    let isIncomeVisible = false; // V24：收入隱私狀態變數
 
     function saveToStorage() {
         localStorage.setItem('tutorClassesV18', JSON.stringify(fixedClasses));
@@ -307,7 +330,7 @@
         setTimeout(() => { 
             document.getElementById('overlay').style.display = 'none'; 
             document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; 
-        }, 300);
+        }, 350);
     }
 
     function openSheet(sheetId) {
@@ -342,7 +365,6 @@
         openSheet('addSheet');
     }
 
-    // V23: 更新新增表單的學生下拉選單
     function updateFormStudentSelect() {
         const formSelect = document.getElementById('studentSelect');
         const students = new Set([...fixedClasses.map(c=>c.student), ...records.map(r=>r.student)]);
@@ -358,14 +380,13 @@
         const val = document.getElementById('studentSelect').value;
         if(val === 'NEW') {
             document.getElementById('newStudentInput').style.display = 'block';
-            document.getElementById('rateInput').value = 800; // 預設值
+            document.getElementById('rateInput').value = 800; 
         } else {
             document.getElementById('newStudentInput').style.display = 'none';
             autoFillRate(val);
         }
     }
 
-    // V23 內部對帳儀表板 (精準隔離學費與代墊雜費)
     function openReportSheet() {
         const studentF = document.getElementById('studentFilter').options[document.getElementById('studentFilter').selectedIndex].text;
         const timeF = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
@@ -398,6 +419,9 @@
                     if(r.status === 'unpaid') { stats[name].miscUnpaid += r.fee; totalAllMiscUnpaid += r.fee; }
                 }
             });
+
+            const totalPaidSum = totalAllTuitionPaid + totalAllMiscPaid;
+            const totalUnpaidSum = totalAllTuitionUnpaid + totalAllMiscUnpaid;
 
             container.innerHTML += `
                 <div class="student-stat-card" style="border-left: 6px solid var(--primary);">
@@ -435,7 +459,6 @@
         openSheet('reportSheet');
     }
 
-    function openBillingSheet() { openSheet('billingSheet'); }
     function openSettingsSheet() { renderFixedClassManageList(); openSheet('settingsSheet'); }
 
     function jumpToDate(dateStr) {
@@ -559,12 +582,21 @@
             if (timeF === 'today') return r.date === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             if (timeF === 'week') {
                 const dayOfWeek = todayAtMidnight.getDay() || 7; 
-                const monday = new Date(todayAtMidnight); monday.setDate(todayAtMidnight.getDate() - dayOfWeek + 1);
+                // 週一為一週的起點
+                const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                const monday = new Date(todayAtMidnight); monday.setDate(todayAtMidnight.getDate() - dayOffset);
                 const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
                 return recDate >= monday && recDate <= sunday;
             }
             return true;
         });
+    }
+
+    // V24 隱私控制：切換金額顯示
+    function toggleIncomeVisibility() {
+        isIncomeVisible = !isIncomeVisible;
+        const filteredRecords = getFilteredRecords();
+        updateDashboard(filteredRecords);
     }
 
     function renderApp() {
@@ -581,13 +613,16 @@
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
 
-        const daysName = ['日', '一', '二', '三', '四', '五', '六'];
+        // V24 調整：日曆標頭從星期一開始
+        const daysName = ['一', '二', '三', '四', '五', '六', '日'];
         daysName.forEach(day => grid.innerHTML += `<div class="cal-day-name">${day}</div>`);
 
+        // V24 調整：計算第一天前面要墊幾個空格 (以星期一為起始)
         const firstDay = new Date(displayYear, displayMonth, 1).getDay();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
         const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
 
-        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent; border:none; cursor:default;"></div>`;
+        for (let i = 0; i < adjustedFirstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent; border:none; cursor:default;"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(displayYear, displayMonth, d);
@@ -687,19 +722,23 @@
         if(filteredRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; padding: 20px;">此區間無任何紀錄</p>';
     }
 
-    // V23: 主儀表板 100% 只算學費淨收入
+    // V24：隱私遮罩渲染邏輯
     function updateDashboard(filteredRecords) {
         let totalHours = 0, totalIncome = 0, totalDebt = 0;
         filteredRecords.forEach(record => {
-            if (record.status !== 'leave' && record.hours > 0) {
-                totalHours += parseFloat(record.hours);
-                if(record.status === 'paid') totalIncome += parseInt(record.fee || 0); 
+            if (record.status !== 'leave') {
+                totalHours += parseFloat(record.hours || 0);
+                if(record.status === 'paid' && record.hours > 0) totalIncome += parseInt(record.fee || 0); 
                 if(record.status === 'unpaid') totalDebt += parseInt(record.fee || 0); 
             }
         });
+        
         document.getElementById('total-hours').innerText = totalHours + 'h';
-        document.getElementById('total-income').innerText = `$${totalIncome}`;
         document.getElementById('total-debt').innerText = `$${totalDebt}`;
+        
+        const privacyIcon = isIncomeVisible ? '👁️' : '🙈';
+        const displayIncome = isIncomeVisible ? `$${totalIncome}` : '****';
+        document.getElementById('total-income').innerHTML = `${displayIncome} <span style="font-size:0.6em; opacity:0.8;">${privacyIcon}</span>`;
     }
 
     function addClass() {
@@ -861,38 +900,10 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
-    function generateBillingMessage() {
-        const student = document.getElementById('studentFilter').value;
-        if (student === 'ALL') { alert("⚠️ 請先選擇特定學生！"); return; }
-        const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
-        if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
-        
-        let tuitionTotal = 0; let miscTotal = 0;
-        let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
-        
-        unpaidRecords.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).forEach(r => {
-            const [y, m, d] = r.date.split('-');
-            if (r.hours === 0) {
-                miscTotal += r.fee; msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
-            } else {
-                tuitionTotal += r.fee; msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
-            }
-        });
-        
-        msg += `\n`;
-        if (miscTotal > 0) {
-            msg += `📚 學費小計：$${tuitionTotal}\n`;
-            msg += `📦 代墊雜費：$${miscTotal}\n`;
-        }
-        msg += `💰 總計應繳：$${tuitionTotal + miscTotal} 元。\n再麻煩您確認了，謝謝！😊`;
-        
-        navigator.clipboard.writeText(msg).then(() => { alert("✅ 專業請款文字已複製！\n已自動為您拆分學費與雜費小計，快去 Line 貼上傳送吧。"); closeAllSheets();});
-    }
-
     function exportCSV() {
         const exportRecords = getFilteredRecords();
         if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,收費金額,狀態,備註,款項類型\n";
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,總費用,狀態,備註,款項類型\n";
         
         let totalHours = 0, totalTuitionPaid = 0, totalMiscPaid = 0, totalTuitionUnpaid = 0, totalMiscUnpaid = 0;
         
