@@ -7,14 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V20</title>
+    <title>家教小幫手 V21</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f4f7f9; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
         .container { max-width: 600px; margin: auto; }
         
         h2 { text-align: center; color: #2c3e50; margin-top: 5px; font-size: 1.5em; font-weight: 800; }
-        h3 { color: #455a64; border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1em; margin-top: 25px; }
         
         .filter-section { display: flex; gap: 10px; margin-bottom: 12px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; }
         .filter-select { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); font-weight: bold; border-radius: 10px; padding: 10px 8px; flex: 1; text-align: center; font-size: 0.95em; appearance: none; box-shadow: 0 2px 8px rgba(33,150,243,0.1);}
@@ -25,7 +24,6 @@
         .card p { margin: 0; font-size: 1.2em; font-weight: bold; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        /* 極簡主操作按鈕 */
         .main-actions { display: flex; gap: 8px; margin-bottom: 15px; }
         .btn-main { flex: 1; padding: 12px 5px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9em; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); transition: transform 0.1s;}
         .btn-main:active { transform: scale(0.96); }
@@ -33,7 +31,6 @@
         .bg-orange { background: linear-gradient(135deg, #ffa726, #f57c00); }
         .bg-gray { background: linear-gradient(135deg, #78909c, #455a64); }
 
-        /* 底部彈出視窗 */
         .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; transition: opacity 0.3s; backdrop-filter: blur(2px);}
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; z-index: 100; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
         .bottom-sheet.show { bottom: 0; }
@@ -41,7 +38,6 @@
         .sheet-title { font-weight: bold; font-size: 1.2em; color: #333; }
         .btn-close { background: #eee; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #555; display: flex; justify-content: center; align-items: center;}
 
-        /* 表單樣式 */
         .input-row { display: flex; gap: 12px; margin-bottom: 15px; }
         .input-group { flex: 1; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: #555; }
@@ -51,7 +47,6 @@
 
         .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 6px 16px rgba(33,150,243,0.4); cursor: pointer; z-index: 50; }
 
-        /* 日曆區塊 */
         .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; }
         .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.2em; color: var(--primary); cursor: pointer; border-bottom: 2px dashed var(--primary); padding-bottom: 2px;}
@@ -75,7 +70,6 @@
         .class-time { font-weight: bold; background: rgba(0,0,0,0.15); border-radius: 3px; display: block; margin-bottom: 2px; font-size: 0.85em; padding: 1px 0;}
         .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #9e9e9e; }
 
-        /* 列表卡片 */
         .record-card { border: none; border-radius: 12px; padding: 15px; margin-bottom: 10px; background: white; border-left: 5px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
         .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #777; font-weight: 600;}
         .record-title { font-weight: 800; font-size: 1.05em; color: #222; margin-bottom: 5px; }
@@ -90,18 +84,15 @@
         .badge-leave { background: #f5f5f5; color: #616161; }
         .badge-pending { background: #e3f2fd; color: #1565c0; }
 
-        /* 系統設定列表 */
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
         .settings-btn { background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #333; }
         .settings-btn.red { background: #ffebee; color: var(--danger); }
         .settings-btn.green { background: #e8f5e9; color: var(--success); }
 
-        /* V20 手機內部對帳專用卡片 */
         .student-stat-card { background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
         .student-stat-name { font-weight: bold; font-size: 1.1em; color: #2c3e50; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;}
         .student-stat-row { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px; }
 
-        /* 模態視窗 */
         #actionModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
         .modal-content { background:white; padding:25px; width:85%; max-width:350px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
         .modal-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; }
@@ -124,10 +115,11 @@
         </select>
     </div>
 
+    <!-- V21 介面文案精準化 -->
     <div class="dashboard">
-        <div class="card"><h4>總時數</h4><p id="total-hours" class="text-blue">0</p></div>
-        <div class="card"><h4>已收費</h4><p id="total-income" class="text-green">$0</p></div>
-        <div class="card"><h4>待收費</h4><p id="total-debt" class="text-orange">$0</p></div>
+        <div class="card"><h4>實上時數</h4><p id="total-hours" class="text-blue">0</p></div>
+        <div class="card"><h4>已收學費</h4><p id="total-income" class="text-green">$0</p></div>
+        <div class="card"><h4>待收總額</h4><p id="total-debt" class="text-orange">$0</p></div>
     </div>
 
     <div class="main-actions">
@@ -160,12 +152,13 @@
 
     <div class="calendar-grid" id="calendarGrid"></div>
 
-    <h3>🧾 帳單與歷史紀錄</h3>
+    <h3 style="margin-top:30px; font-weight:800; color:#2c3e50;">🧾 帳單與歷史紀錄</h3>
     <div id="recordList"></div>
 </div>
 
 <div class="fab" onclick="openAddSheet()">+</div>
 
+<!-- 新增表單 Bottom Sheet -->
 <div class="bottom-sheet-overlay" id="overlay" onclick="closeAllSheets()"></div>
 
 <div class="bottom-sheet" id="addSheet">
@@ -179,7 +172,7 @@
             <select id="typeInput" onchange="toggleFormFields()">
                 <option value="fixed">🔄 固定每週上課</option>
                 <option value="temp">📌 單次臨時排課</option>
-                <option value="extra">💵 教材費/雜費項目</option>
+                <option value="extra">💵 教材費/代墊雜費</option>
             </select>
         </div>
     </div>
@@ -210,15 +203,16 @@
         <div class="input-group"><label>項目備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討進度"></div>
     </div>
     <div class="input-row" id="customFeeRow" style="display:none;">
-        <div class="input-group"><label>雜費項目說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
+        <div class="input-group"><label>代墊雜費說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
         <div class="input-group"><label>金額 ($)</label><input type="number" id="customFeeInput" placeholder="輸入總金額" min="0"></div>
     </div>
     <button class="btn-add" onclick="addClass()">儲存項目</button>
 </div>
 
+<!-- 內部對帳儀表板 Sheet -->
 <div class="bottom-sheet" id="reportSheet">
     <div class="sheet-header">
-        <div class="sheet-title">📊 內部財務報表</div>
+        <div class="sheet-title">📊 內部財務總覽</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
     <div style="font-size:0.85em; color:#666; margin-bottom:10px; text-align:center;">
@@ -227,15 +221,17 @@
     <div id="reportStudentCardsContainer" style="margin-bottom: 20px;"></div>
 </div>
 
+<!-- 複製請款文字 Sheet -->
 <div class="bottom-sheet" id="billingSheet">
     <div class="sheet-header">
         <div class="sheet-title">💬 產生請款訊息</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <p style="font-size:0.9em; color:#555; margin-bottom:15px; line-height: 1.5;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算他尚未繳交的費用，並為您產生適合貼到 Line 的文字明細。</p>
+    <p style="font-size:0.9em; color:#555; margin-bottom:15px; line-height: 1.5;">請先在上方「所有學生」中選擇特定的學生，系統會自動結算他尚未繳交的費用，並為您產生精美專業的 Line 帳單明細。</p>
     <button class="modal-btn" style="background:var(--warning); color:white;" onclick="generateBillingMessage()">💬 複製 Line 請款文字</button>
 </div>
 
+<!-- 系統設定與管理 Sheet -->
 <div class="bottom-sheet" id="settingsSheet">
     <div class="sheet-header">
         <div class="sheet-title">⚙️ 系統設定與管理</div>
@@ -247,7 +243,7 @@
     
     <div style="font-weight:bold; margin-bottom:10px; color:#555; border-top: 1px solid #eee; padding-top: 15px;">⚡ 批次操作</div>
     <div class="settings-item">
-        <span>一鍵結清欠費 <span style="font-size:0.75em; color:#999;">(需先選擇單一學生)</span></span>
+        <span>一鍵結清欠費 <span style="font-size:0.75em; color:#999;">(需先選定單一學生)</span></span>
         <button class="settings-btn green" onclick="batchSettleUnpaid()">💰 結清</button>
     </div>
 
@@ -265,6 +261,7 @@
     </div>
 </div>
 
+<!-- 課程操作 Modal -->
 <div id="actionModal">
     <div class="modal-content">
         <div id="modalTitle" class="modal-title"></div>
@@ -300,10 +297,11 @@
 
     // --- Bottom Sheets 管理邏輯 ---
     function closeAllSheets() {
-        ['addSheet', 'manageFixedSheet', 'reportSheet', 'billingSheet', 'settingsSheet'].forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).classList.remove('show');
-        });
-        setTimeout(() => { document.getElementById('overlay').style.display = 'none'; document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; }, 300);
+        document.querySelectorAll('.bottom-sheet').forEach(sheet => sheet.classList.remove('show'));
+        setTimeout(() => { 
+            document.getElementById('overlay').style.display = 'none'; 
+            document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; 
+        }, 300);
     }
 
     function openSheet(sheetId) {
@@ -320,7 +318,7 @@
         openSheet('addSheet');
     }
 
-    // V20 新功能：動態生成手機專用老闆財報
+    // V21 內部對帳儀表板 (精準隔離學費與代墊雜費)
     function openReportSheet() {
         const studentF = document.getElementById('studentFilter').options[document.getElementById('studentFilter').selectedIndex].text;
         const timeF = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
@@ -339,33 +337,39 @@
             filteredRecords.forEach(r => {
                 if(r.status === 'leave') return;
                 let name = r.student;
-                if(!stats[name]) stats[name] = { hours: 0, paid: 0, unpaid: 0 };
+                if(!stats[name]) stats[name] = { hours: 0, tuitionPaid: 0, debt: 0 };
                 
                 stats[name].hours += parseFloat(r.hours || 0);
                 totalAllHours += parseFloat(r.hours || 0);
 
-                if(r.status === 'paid') { stats[name].paid += parseInt(r.fee || 0); totalAllPaid += parseInt(r.fee || 0); }
-                if(r.status === 'unpaid') { stats[name].unpaid += parseInt(r.fee || 0); totalAllUnpaid += parseInt(r.fee || 0); }
+                // 核心邏輯修正：只有時數大於0的才算作實質學費收入 (淨利)
+                if(r.status === 'paid' && r.hours > 0) { 
+                    stats[name].tuitionPaid += parseInt(r.fee || 0); 
+                    totalAllPaid += parseInt(r.fee || 0); 
+                }
+                // 欠費則是所有未收項目(含學費與代墊雜費)
+                if(r.status === 'unpaid') { 
+                    stats[name].debt += parseInt(r.fee || 0); 
+                    totalAllUnpaid += parseInt(r.fee || 0); 
+                }
             });
 
-            // 渲染總計卡片
             container.innerHTML += `
                 <div class="student-stat-card" style="border-left: 5px solid var(--primary); background: #fff;">
                     <div class="student-stat-name">🌟 總計 (選定區間)</div>
                     <div class="student-stat-row"><span>實上總時數：</span><span style="font-weight:bold;">${totalAllHours}h</span></div>
-                    <div class="student-stat-row"><span>已收總收入：</span><span style="font-weight:bold; color:var(--success);">$${totalAllPaid}</span></div>
-                    <div class="student-stat-row"><span>應收總欠費：</span><span style="font-weight:bold; color:var(--danger);">$${totalAllUnpaid}</span></div>
+                    <div class="student-stat-row"><span>淨收學費總額：</span><span style="font-weight:bold; color:var(--success);">$${totalAllPaid}</span></div>
+                    <div class="student-stat-row"><span>待收總額(含雜費)：</span><span style="font-weight:bold; color:var(--danger);">$${totalAllUnpaid}</span></div>
                 </div>
             `;
 
-            // 渲染每個學生的卡片
             for (let name in stats) {
                 container.innerHTML += `
                     <div class="student-stat-card">
                         <div class="student-stat-name">🎓 ${name}</div>
-                        <div class="student-stat-row"><span>上課時數：</span><span>${stats[name].hours}h</span></div>
-                        <div class="student-stat-row"><span>已收金額：</span><span style="color:var(--success);">$${stats[name].paid}</span></div>
-                        <div class="student-stat-row"><span>待繳欠費：</span><span style="font-weight:bold; color:var(--danger);">$${stats[name].unpaid}</span></div>
+                        <div class="student-stat-row"><span>實上時數：</span><span>${stats[name].hours}h</span></div>
+                        <div class="student-stat-row"><span>已收學費：</span><span style="color:var(--success);">$${stats[name].tuitionPaid}</span></div>
+                        <div class="student-stat-row"><span>待收總額：</span><span style="font-weight:bold; color:var(--danger);">$${stats[name].debt}</span></div>
                     </div>
                 `;
             }
@@ -392,11 +396,7 @@
                     cell.style.background = '#e3f2fd';
                     cell.style.border = '2px solid var(--primary)';
                     cell.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        cell.style.background = '';
-                        cell.style.border = '';
-                        cell.style.transform = '';
-                    }, 1500);
+                    setTimeout(() => { cell.style.background = ''; cell.style.border = ''; cell.style.transform = ''; }, 1500);
                 }
             });
         }, 100);
@@ -417,30 +417,26 @@
         return h * 60 + m;
     }
 
-    // 🛠 V20 修復核心：徹底解耦固定與臨時課的防撞邏輯
+    // 防撞邏輯保持分離狀態，避免幽靈衝突
     function checkTimeConflict(type, targetDateOrDay, time, hours, ignoreRecordIndex = -1) {
         const startMins = timeToMins(time);
         const endMins = startMins + parseFloat(hours) * 60;
 
         if (type === 'fixed') {
-            const dayOfWeek = targetDateOrDay.toString(); // 這裡傳入的是 0~6
+            const dayOfWeek = targetDateOrDay.toString();
             const conflictFixed = fixedClasses.find(c => {
                 if (c.day !== dayOfWeek) return false;
                 const cStart = timeToMins(c.time);
                 const cEnd = cStart + parseFloat(c.hours) * 60;
                 return (startMins < cEnd && endMins > cStart);
             });
-            if (conflictFixed) return conflictFixed.student;
-            return null;
+            return conflictFixed ? conflictFixed.student : null;
         } else {
-            const dateStr = targetDateOrDay; // 這裡傳入的是 YYYY-MM-DD
-            
-            // 透過安全拆解來獲得本地的星期幾
+            const dateStr = targetDateOrDay;
             const [y, m, d] = dateStr.split('-');
             const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
             const dayOfWeek = dateObj.getDay().toString();
 
-            // 檢查是否與實體紀錄衝突
             const conflictRec = records.find((r, idx) => {
                 if (idx === ignoreRecordIndex || r.date !== dateStr || r.status === 'leave' || r.hours === 0) return false;
                 const rStart = timeToMins(r.time);
@@ -449,19 +445,15 @@
             });
             if (conflictRec) return conflictRec.student;
 
-            // 檢查是否與固定預排衝突
             const conflictFixed = fixedClasses.find(c => {
                 if (c.day !== dayOfWeek) return false;
-                // 如果這堂固定課已經被實體化（無論是上課還是請假），就不檢查固定課本體
                 if (records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time)) return false;
                 
                 const cStart = timeToMins(c.time);
                 const cEnd = cStart + parseFloat(c.hours) * 60;
                 return (startMins < cEnd && endMins > cStart);
             });
-            if (conflictFixed) return conflictFixed.student;
-
-            return null;
+            return conflictFixed ? conflictFixed.student : null;
         }
     }
 
@@ -493,8 +485,7 @@
 
         studentFilter.innerHTML = '<option value="ALL">🧑‍🎓 所有學生</option>';
         datalist.innerHTML = '';
-        const allStudents = Array.from(students);
-        allStudents.forEach(student => {
+        Array.from(students).forEach(student => {
             const hasActiveFixed = fixedClasses.some(c => c.student === student);
             const label = !hasActiveFixed ? `${student} (歷史學生)` : student;
             studentFilter.innerHTML += `<option value="${student}">${label}</option>`;
@@ -633,7 +624,7 @@
 
             const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
             const titleText = record.hours === 0 ? 
-                `📦 雜費：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
+                `📦 雜費代墊：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
                 `🎓 ${record.student} (${record.hours} 小時) ${record.status !== 'leave' ? `<span style="color:var(--primary)">$${record.fee}</span>` : ''}`;
 
             const memoHTML = (record.note && record.hours > 0) ? `<div class="record-memo">📝 備註：${record.note}</div>` : '';
@@ -655,13 +646,14 @@
         if(filteredRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">此區間無任何紀錄</p>';
     }
 
+    // V21: Dashboard 精準邏輯（排除代墊雜費收入）
     function updateDashboard(filteredRecords) {
         let totalHours = 0, totalIncome = 0, totalDebt = 0;
         filteredRecords.forEach(record => {
             if (record.status !== 'leave') {
                 totalHours += parseFloat(record.hours || 0);
-                if(record.status === 'paid') totalIncome += parseInt(record.fee);
-                if(record.status === 'unpaid') totalDebt += parseInt(record.fee); 
+                if(record.status === 'paid' && record.hours > 0) totalIncome += parseInt(record.fee || 0); // 只有學費算收入
+                if(record.status === 'unpaid') totalDebt += parseInt(record.fee || 0); // 欠費全算，因包含要討回的雜費
             }
         });
         document.getElementById('total-hours').innerText = totalHours;
@@ -685,7 +677,7 @@
                 if(!time || hours<=0 || rate<=0) { alert('請完整填寫時間與時薪！'); return; }
                 
                 let hasConflict = checkTimeConflict('fixed', day, time, hours, -1);
-                if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的固定課程衝突！是否仍要排定？`)) return;
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的固定預排課程衝突！是否仍要排定？`)) return;
                 
                 fixedClasses.push({ day, time, student, hours, rate, note: memo });
             } else {
@@ -770,7 +762,6 @@
             
             let hasConflict = null;
             if (currentModalTarget.isFixedProjected) {
-                // 如果是編輯還沒實現的固定課，當作是在那天加一堂臨時課來檢查
                 hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
             } else {
                 hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex);
@@ -828,20 +819,37 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
+    // V21: 請款文字專業升級分類 (學費/雜費自動小計)
     function generateBillingMessage() {
         const student = document.getElementById('studentFilter').value;
         if (student === 'ALL') { alert("⚠️ 請先選擇特定學生！"); return; }
         const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
         if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
-        let total = unpaidRecords.reduce((sum, r) => sum + r.fee, 0);
+        
+        let tuitionTotal = 0;
+        let miscTotal = 0;
+        
         let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
+        
         unpaidRecords.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).forEach(r => {
             const [y, m, d] = r.date.split('-');
-            if (r.hours === 0) msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
-            else msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
+            if (r.hours === 0) {
+                miscTotal += r.fee;
+                msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
+            } else {
+                tuitionTotal += r.fee;
+                msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
+            }
         });
-        msg += `\n總計費用為：$${total} 元。\n再麻煩您確認了，謝謝！😊`;
-        navigator.clipboard.writeText(msg).then(() => { alert("✅ 請款文字已複製！"); closeAllSheets();});
+        
+        msg += `\n`;
+        if (miscTotal > 0) {
+            msg += `📚 學費小計：$${tuitionTotal}\n`;
+            msg += `📦 代墊雜費：$${miscTotal}\n`;
+        }
+        msg += `💰 總計應繳：$${tuitionTotal + miscTotal} 元。\n再麻煩您確認了，謝謝！😊`;
+        
+        navigator.clipboard.writeText(msg).then(() => { alert("✅ 專業請款文字已複製！\n已自動為您拆分學費與雜費小計，快去 Line 貼上傳送吧。"); closeAllSheets();});
     }
 
     function exportCSV() {
@@ -854,11 +862,11 @@
             csvContent += `${r.date},${r.time},${r.hours===0?'[雜費]'+r.note:r.student},${r.hours},${r.fee},${s},${r.note||''}\n`;
             if (r.status !== 'leave') {
                 totalHours += parseFloat(r.hours || 0);
-                if (r.status === 'paid') totalPaid += parseInt(r.fee || 0);
+                if (r.status === 'paid' && r.hours > 0) totalPaid += parseInt(r.fee || 0);
                 if (r.status === 'unpaid') totalUnpaid += parseInt(r.fee || 0);
             }
         });
-        csvContent += `\n實上總時數,${totalHours},小時\n已收總收入,${totalPaid},元\n未收總欠費,${totalUnpaid},元\n`;
+        csvContent += `\n實上總時數,${totalHours},小時\n淨收學費總額,${totalPaid},元\n待收總額(含雜費),${totalUnpaid},元\n`;
         const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent));
         link.setAttribute("download", `家教財務報表.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
