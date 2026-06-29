@@ -7,9 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V18</title>
+    <title>家教小幫手 V19</title>
     <style>
-        /* 現代化行動版 UI 樣式 */
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f4f7f9; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 90px; }
         .container { max-width: 600px; margin: auto; }
@@ -29,11 +28,13 @@
         .action-scroll-wrapper { overflow-x: auto; white-space: nowrap; margin-bottom: 15px; padding-bottom: 5px; }
         .action-row { display: inline-flex; gap: 10px; }
         .btn { padding: 12px 16px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9em; cursor: pointer; text-align: center; display: inline-block; }
+        .btn-receipt { background: #673ab7; color: white; } /* V19 手機收據卡按鈕顏色 */
         .btn-export { background: #607d8b; color: white; }
         .btn-billing { background: var(--warning); color: white; display: none; }
         .btn-batch-paid { background: var(--success); color: white; display: none; }
-        .btn-manage { background: #795548; color: white; }
+        .btn-manage { background: #79554 brown; color: white; background-color: #795548;}
 
+        /* 底部彈出視窗 */
         .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; transition: opacity 0.3s; }
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; z-index: 100; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
         .bottom-sheet.show { bottom: 0; }
@@ -44,34 +45,29 @@
         .input-row { display: flex; gap: 12px; margin-bottom: 15px; }
         .input-group { flex: 1; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: #555; }
-        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: #fafafa; transition: border-color 0.2s;}
+        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: #fafafa; }
         input:focus, select:focus { border-color: var(--primary); outline: none; background: white;}
         .btn-add { background-color: var(--success); color: white; width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; box-shadow: 0 4px 10px rgba(76,175,80,0.3);}
 
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 6px 16px rgba(33,150,243,0.4); cursor: pointer; z-index: 50; transition: transform 0.1s; }
-        .fab:active { transform: scale(0.95); }
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 6px 16px rgba(33,150,243,0.4); cursor: pointer; z-index: 50; }
 
-        .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
-        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .calendar-header { font-weight: 800; font-size: 1.2em; color: #333; margin: 0; }
-        
-        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #666; font-weight: 600;}
-        .legend-item { display: flex; align-items: center; gap: 4px; }
-        .legend-box { width: 14px; height: 14px; border-radius: 4px; }
-        .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #9e9e9e; }
-
+        /* 日曆格線 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #e0e0e0; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
         .cal-day-name { background: #607d8b; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: bold; }
-        .cal-cell { background: white; min-height: 90px; padding: 4px; display: flex; flex-direction: column; }
-        .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+        .cal-cell { background: white; min-height: 95px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: background 0.1s; }
+        .cal-cell:active { background: #f0f4f8; } /* 手機點擊格子視覺回饋 */
+        
+        .cal-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; pointer-events: none; }
         .cal-date { color: #555; }
         .cal-day-hours { color: var(--primary); font-size: 0.85em; background: #e3f2fd; padding: 2px 4px; border-radius: 4px;}
         .cal-today { background: #fffde7; } .cal-today .cal-date { color: var(--warning); }
         
-        .cal-class { color: white; font-size: 0.75em; padding: 5px 3px; border-radius: 6px; margin-bottom: 4px; text-align: center; line-height: 1.2; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600;}
+        /* 課程標籤 */
+        .cal-class { color: white; font-size: 0.75em; padding: 5px 3px; border-radius: 6px; margin-bottom: 4px; text-align: center; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
         .class-time { font-weight: bold; background: rgba(0,0,0,0.15); border-radius: 3px; display: block; margin-bottom: 2px; font-size: 0.85em; padding: 1px 0;}
         .cal-pending { background: var(--primary); } .cal-unpaid { background: var(--warning); } .cal-paid { background: var(--success); } .cal-leave { background: #9e9e9e; }
 
+        /* 列表卡片 */
         .record-card { border: none; border-radius: 12px; padding: 15px; margin-bottom: 10px; background: white; border-left: 5px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
         .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; color: #777; font-weight: 600;}
         .record-title { font-weight: 800; font-size: 1.05em; color: #222; margin-bottom: 5px; }
@@ -87,19 +83,25 @@
         .badge-pending { background: #e3f2fd; color: #1565c0; }
 
         .fixed-class-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .fixed-class-info { flex: 1; }
-        .fixed-class-title { font-weight: bold; font-size: 1em; color: #333; margin-bottom: 4px; }
-        .fixed-class-detail { font-size: 0.85em; color: #666; }
-        .btn-remove-fixed { background: #ffebee; color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85em; cursor: pointer; }
+        .btn-remove-fixed { background: #ffebee; color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; }
 
-        #actionModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
+        /* 模態視窗通用 */
+        #actionModal, #receiptModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:110; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
         .modal-content { background:white; padding:25px; width:85%; max-width:350px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
-        .modal-title { font-weight: 800; font-size: 1.15em; margin-bottom: 5px; color: #222; }
-        .modal-memo { font-size: 0.9em; color: #777; margin-bottom: 15px; }
         .modal-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 12px; font-weight: bold; font-size: 1em; cursor: pointer; }
 
-        .backup-section { margin-top: 30px; padding: 20px; background: #fff; border-radius: 12px; font-size: 0.85em; color: #666; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
-        .backup-section input[type="file"] { margin-top: 10px; font-size: 0.8em; padding: 5px; }
+        /* V19 手機收據專屬美化樣式 */
+        .receipt-card-view { text-align: left; background: #fff; border: 2px dashed #bbb; padding: 15px; border-radius: 10px; margin: 15px 0; max-height: 280px; overflow-y: auto; }
+        .receipt-item { display: flex; justify-content: space-between; font-size: 0.85em; padding: 6px 0; border-bottom: 1px dotted #eee; }
+
+        .calendar-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; }
+        .btn-nav { background: #edf2f7; color: #455a64; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; }
+        .calendar-header { font-weight: 800; font-size: 1.2em; color: #333; margin: 0; }
+        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #666; font-weight: 600;}
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 4px; }
+        .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #9e9e9e; }
+        .backup-section { margin-top: 30px; padding: 20px; background: #fff; border-radius: 12px; font-size: 0.85em; color: #666; text-align: center; }
     </style>
 </head>
 <body>
@@ -127,10 +129,11 @@
 
     <div class="action-scroll-wrapper">
         <div class="action-row">
-            <button class="btn btn-manage" onclick="openFixedManageSheet()">⚙️ 學生/課表管理</button>
-            <button class="btn btn-export" onclick="exportCSV()">📥 匯出報表</button>
-            <button id="btnBilling" class="btn btn-billing" onclick="generateBillingMessage()">💬 複製請款</button>
-            <button id="btnBatchPaid" class="btn btn-batch-paid" onclick="batchSettleUnpaid()">💰 一鍵結清</button>
+            <button class="btn btn-receipt" onclick="openReceiptModal()">🧾 手機截圖對帳單</button>
+            <button class="btn btn-manage" onclick="openFixedManageSheet()">⚙️ 固定課表管理</button>
+            <button class="btn btn-export" onclick="exportCSV()">📥 匯出 CSV 報表</button>
+            <button id="btnBilling" class="btn btn-billing" onclick="generateBillingMessage()">💬 複製請款文字</button>
+            <button id="btnBatchPaid" class="btn btn-batch-paid" onclick="batchSettleUnpaid()">💰 一鍵結清欠費</button>
         </div>
     </div>
 
@@ -149,7 +152,7 @@
 
     <div class="calendar-grid" id="calendarGrid"></div>
 
-    <h3>🧾 帳單與紀錄</h3>
+    <h3>🧾 帳單與歷史紀錄</h3>
     <div id="recordList"></div>
 
     <div class="backup-section">
@@ -164,7 +167,7 @@
 <div class="bottom-sheet-overlay" id="addSheetOverlay" onclick="closeSheets()"></div>
 <div class="bottom-sheet" id="addSheet">
     <div class="sheet-header">
-        <div class="sheet-title">➕ 排定新課程/項目</div>
+        <div class="sheet-title" id="sheetFormTitle">➕ 排定新課程/項目</div>
         <button class="btn-close" onclick="closeSheets()">×</button>
     </div>
     
@@ -201,13 +204,11 @@
         <div class="input-group"><label>時數 (小時)</label><input type="number" id="hoursInput" step="0.5" value="2" min="0"></div>
         <div class="input-group"><label>時薪 ($)</label><input type="number" id="rateInput" value="800" min="0"></div>
     </div>
-    
     <div class="input-row" id="memoRow">
-        <div class="input-group"><label>課程備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討期中考卷"></div>
+        <div class="input-group"><label>項目備註 (選填)</label><input type="text" id="classMemoInput" placeholder="例: 檢討進度/代購教材說明"></div>
     </div>
-
     <div class="input-row" id="customFeeRow" style="display:none;">
-        <div class="input-group"><label>雜費說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
+        <div class="input-group"><label>雜費項目說明</label><input type="text" id="itemDescInput" placeholder="例: 購買國文講義"></div>
         <div class="input-group"><label>金額 ($)</label><input type="number" id="customFeeInput" placeholder="輸入總金額" min="0"></div>
     </div>
     <button class="btn-add" onclick="addClass()">儲存項目</button>
@@ -215,11 +216,8 @@
 
 <div class="bottom-sheet" id="manageFixedSheet">
     <div class="sheet-header">
-        <div class="sheet-title">⚙️ 學生與固定課表管理</div>
+        <div class="sheet-title">⚙️ 固定課表管理</div>
         <button class="btn-close" onclick="closeSheets()">×</button>
-    </div>
-    <div style="font-size:0.85em; color:#666; margin-bottom:15px;">
-        💡 若學生「不再繼續上課」，請將其固定課表刪除。其歷史帳務將不受影響，並轉為歷史學生。
     </div>
     <div id="fixedClassListContainer"></div>
 </div>
@@ -237,36 +235,59 @@
     </div>
 </div>
 
+<div id="receiptModal">
+    <div class="modal-content" style="max-width: 400px; width: 90%;">
+        <div style="font-size: 1.3em; font-weight: bold; color: #673ab7; margin-bottom: 5px;">🧾 家教對帳電子明細</div>
+        <div id="receiptStudentHeader" style="font-weight: bold; font-size: 1.05em; color: #333;"></div>
+        <div id="receiptTimeHeader" style="font-size: 0.85em; color: #666; margin-bottom: 10px;"></div>
+        
+        <div class="receipt-card-view" id="receiptItemsContainer"></div>
+        
+        <div style="text-align: right; font-weight: bold; font-size: 1em; margin-bottom: 15px; line-height: 1.5;">
+            <span style="color:var(--success)">已結清項目：<span id="receiptPaidSum">$0</span></span><br>
+            <span style="color:var(--danger)">本次應繳欠費：<span id="receiptUnpaidSum">$0</span></span>
+        </div>
+        <div style="font-size: 0.75em; color: #999; margin-bottom: 15px; text-align: center;">💡 提示：您可以直接在手機上「螢幕截圖」傳送給家長。</div>
+        <button class="modal-btn" style="background:#673ab7; color:white; margin-bottom: 0;" onclick="closeReceiptModal()">關閉預覽</button>
+    </div>
+</div>
+
 <script>
     const today = new Date();
     let displayYear = today.getFullYear();
     let displayMonth = today.getMonth(); 
     
-    let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || JSON.parse(localStorage.getItem('tutorClassesV17')) || [];
-    let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || JSON.parse(localStorage.getItem('tutorRecordsV17')) || []; 
+    let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
+    let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
 
     function saveToStorage() {
         localStorage.setItem('tutorClassesV18', JSON.stringify(fixedClasses));
         localStorage.setItem('tutorRecordsV18', JSON.stringify(records));
     }
 
-    // 🕒 V18 優化：自動推算下課時間
     function getEndTime(startStr, hours) {
         if (!startStr || !hours) return '';
         let [h, m] = startStr.split(':').map(Number);
         let totalMins = h * 60 + m + parseFloat(hours) * 60;
-        let endH = Math.floor(totalMins / 60) % 24;
-        let endM = Math.floor(totalMins % 60);
-        return `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+        return `${String(Math.floor(totalMins / 60) % 24).padStart(2,'0')}:${String(Math.floor(totalMins % 60)).padStart(2,'0')}`;
+    }
+
+    // V19 新功能 1：日曆格子點擊快速排課
+    function handleCellClick(e, dateStr) {
+        if (e.target.closest('.cal-class')) return; // 如果點到的是課表標籤，不觸發排課
+        document.getElementById('typeInput').value = 'temp';
+        toggleFormFields();
+        document.getElementById('dateInput').value = dateStr;
+        document.getElementById('sheetFormTitle').innerText = `📅 快速排課：${dateStr.split('-')[1]}月${dateStr.split('-')[2]}日`;
+        openAddSheet();
     }
 
     function openAddSheet() {
-        // V18 修復：抓取本地時區日期，防止跨時區日期錯置
-        const todayLocal = new Date();
-        const offset = todayLocal.getTimezoneOffset() * 60000;
-        const localISODate = (new Date(todayLocal - offset)).toISOString().split('T')[0];
-        document.getElementById('dateInput').value = localISODate;
-        
+        if(!document.getElementById('dateInput').value) {
+            const todayLocal = new Date();
+            const offset = todayLocal.getTimezoneOffset() * 60000;
+            document.getElementById('dateInput').value = (new Date(todayLocal - offset)).toISOString().split('T')[0];
+        }
         document.getElementById('addSheetOverlay').style.display = 'block';
         setTimeout(() => { document.getElementById('addSheet').classList.add('show'); }, 10);
     }
@@ -280,44 +301,58 @@
     function closeSheets() {
         document.getElementById('addSheet').classList.remove('show');
         document.getElementById('manageFixedSheet').classList.remove('show');
-        setTimeout(() => { document.getElementById('addSheetOverlay').style.display = 'none'; }, 300);
+        setTimeout(() => { document.getElementById('addSheetOverlay').style.display = 'none'; document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; }, 300);
     }
+
+    // V19 新功能 2：手機截圖對帳收據生成器
+    function openReceiptModal() {
+        const studentF = document.getElementById('studentFilter').value;
+        const timeF = document.getElementById('timeFilter').value;
+        const filtered = getFilteredRecords();
+        
+        document.getElementById('receiptStudentHeader').innerText = studentF === 'ALL' ? '🧑‍🎓 項目對象：所有學生總明細' : `🧑‍🎓 學生姓名：${studentF}`;
+        
+        const timeLabels = { month: '本月區間明細', week: '本週區間明細', today: '今日即時明細', all: '歷史完整明細' };
+        document.getElementById('receiptTimeHeader').innerText = `📅 帳單統計：${displayYear}年${displayMonth+1}月 (${timeLabels[timeF] || ''})`;
+        
+        const container = document.getElementById('receiptItemsContainer');
+        container.innerHTML = '';
+        
+        let paidSum = 0, unpaidSum = 0;
+        
+        // 按日期時間先後排序
+        filtered.sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||'')).forEach(r => {
+            if(r.status !== 'leave') {
+                if(r.status === 'paid') paidSum += r.fee;
+                if(r.status === 'unpaid') unpaidSum += r.fee;
+            }
+            
+            let statusText = r.status === 'paid' ? '已結清' : (r.status === 'unpaid' ? '待繳' : (r.status==='leave'?'已取消':'待上課'));
+            let statusColor = r.status === 'paid' ? 'var(--success)' : (r.status === 'unpaid' ? 'var(--danger)' : '#777');
+            let nameText = r.hours === 0 ? `[雜費]${r.note}` : `${r.student} (${r.hours}h)${r.note?'-'+r.note:''}`;
+            let dateMD = r.date.split('-')[1] + '/' + r.date.split('-')[2];
+            
+            container.innerHTML += `
+                <div class="receipt-item">
+                    <span>🟢 ${dateMD} ${r.time||''} ${nameText}</span>
+                    <span style="font-weight:bold; color:${statusColor}">$${r.fee} (${statusText})</span>
+                </div>
+            `;
+        });
+        
+        if(filtered.length === 0) container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">當前篩選條件下無任何帳務紀錄。</p>';
+        
+        document.getElementById('receiptPaidSum').innerText = `$${paidSum}`;
+        document.getElementById('receiptUnpaidSum').innerText = `$${unpaidSum}`;
+        document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    function closeReceiptModal() { document.getElementById('receiptModal').style.display = 'none'; }
 
     function timeToMins(timeStr) {
         if (!timeStr) return 0;
         const [h, m] = timeStr.split(':').map(Number);
         return h * 60 + m;
-    }
-
-    const daysNameArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-
-    function renderFixedClassManageList() {
-        const container = document.getElementById('fixedClassListContainer');
-        container.innerHTML = '';
-        if (fixedClasses.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999;">目前沒有安排任何固定課表。</p>';
-            return;
-        }
-        fixedClasses.forEach((c, index) => {
-            const timeRange = c.time ? `${c.time}-${getEndTime(c.time, c.hours)}` : '';
-            container.innerHTML += `
-                <div class="fixed-class-item">
-                    <div class="fixed-class-info">
-                        <div class="fixed-class-title">🎓 ${c.student}</div>
-                        <div class="fixed-class-detail">每週 ${daysNameArr[parseInt(c.day)]} ${timeRange} (${c.hours}h)</div>
-                    </div>
-                    <button class="btn-remove-fixed" onclick="removeFixedClass(${index})">🗑️ 停課/刪除</button>
-                </div>
-            `;
-        });
-    }
-
-    function removeFixedClass(index) {
-        const studentName = fixedClasses[index].student;
-        if(confirm(`確定要刪除【${studentName}】的固定課表嗎？\n(歷史請款紀錄會安全保留)`)) {
-            fixedClasses.splice(index, 1);
-            saveToStorage(); renderFixedClassManageList(); renderApp();
-        }
     }
 
     function checkTimeConflict(date, time, hours, ignoreRecordIndex = -1, ignoreFixedStudent = null) {
@@ -337,15 +372,12 @@
         const dayOfWeek = dateObj.getDay().toString();
         const conflictFixed = fixedClasses.find(c => {
             if (c.day !== dayOfWeek || c.student === ignoreFixedStudent) return false;
-            const isOverridden = records.some(r => r.date === date && r.student === c.student && r.time === c.time);
-            if (isOverridden) return false;
-
+            if (records.some(r => r.date === date && r.student === c.student && r.time === c.time)) return false;
             const cStart = timeToMins(c.time);
             const cEnd = cStart + parseFloat(c.hours) * 60;
             return (startMins < cEnd && endMins > cStart);
         });
         if (conflictFixed) return conflictFixed.student;
-
         return null;
     }
 
@@ -370,25 +402,27 @@
         const studentFilter = document.getElementById('studentFilter');
         const datalist = document.getElementById('studentDatalist');
         const currentSelected = studentFilter.value;
+        const students = new Set();
         
-        const activeStudents = new Set(fixedClasses.map(c => c.student));
-        records.forEach(r => { if(r.status === 'unpaid' || r.status === 'pending') activeStudents.add(r.student); });
-        const allStudents = new Set([...fixedClasses.map(c=>c.student), ...records.map(r=>r.student)]);
-        
+        fixedClasses.forEach(c => students.add(c.student));
+        records.forEach(r => students.add(r.student));
+
         studentFilter.innerHTML = '<option value="ALL">🧑‍🎓 所有學生</option>';
         datalist.innerHTML = '';
+        allStudents = Array.from(students);
         allStudents.forEach(student => {
-            const label = !activeStudents.has(student) ? `${student} (歷史學生)` : student;
+            const hasActiveFixed = fixedClasses.some(c => c.student === student);
+            const label = !hasActiveFixed ? `${student} (歷史學生)` : student;
             studentFilter.innerHTML += `<option value="${student}">${label}</option>`;
             datalist.innerHTML += `<option value="${student}"></option>`;
         });
         
-        if(allStudents.has(currentSelected)) studentFilter.value = currentSelected;
+        if(students.has(currentSelected)) studentFilter.value = currentSelected;
         
         const isSingleStudent = studentFilter.value !== 'ALL';
-        document.getElementById('btnBilling').style.display = isSingleStudent ? 'inline-block' : 'none';
+        document.getElementById('btnBilling').style.display = isSingleStudent ? 'block' : 'none';
         const hasUnpaid = getFilteredRecords().some(r => r.status === 'unpaid');
-        document.getElementById('btnBatchPaid').style.display = (isSingleStudent && hasUnpaid) ? 'inline-block' : 'none';
+        document.getElementById('btnBatchPaid').style.display = (isSingleStudent && hasUnpaid) ? 'block' : 'none';
     }
 
     function autoFillRate() {
@@ -443,7 +477,7 @@
         const firstDay = new Date(displayYear, displayMonth, 1).getDay();
         const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
 
-        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent;"></div>`;
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent; border:none; cursor:default;"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(displayYear, displayMonth, d);
@@ -472,7 +506,8 @@
             });
 
             let hoursBadge = dayTotalHours > 0 ? `<span class="cal-day-hours">⏱️${dayTotalHours}h</span>` : '';
-            let cellHTML = `<div class="${cellClass}"><div class="cal-date-row"><span class="cal-date">${d}</span>${hoursBadge}</div>`;
+            // V19 新增：加入 onclick="handleCellClick(event, '${dateStr}')" 實現點擊空白處排課
+            let cellHTML = `<div class="${cellClass}" onclick="handleCellClick(event, '${dateStr}')"><div class="cal-date-row"><span class="cal-date">${d}</span>${hoursBadge}</div>`;
             
             classesToRender.forEach((cls) => {
                 let bgClass = 'cal-pending';
@@ -488,8 +523,8 @@
                     originalIndex: cls.originalIndex
                 }));
 
-                const displayName = isExtraItem ? `💰${cls.note}` : cls.student;
-                // V18 優化：日曆格子顯示區間時間
+                // 🌟 鞏固功能：單堂課名稱精確帶出上課時數 (Xh)
+                const displayName = isExtraItem ? `💰${cls.note}` : `${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
 
                 cellHTML += `<div class="cal-class ${bgClass}" onclick="openModal('${payload}')">
@@ -505,7 +540,6 @@
         const recordList = document.getElementById('recordList');
         recordList.innerHTML = '';
         
-        // V18 優化：過濾後的紀錄，日期相同時，按時間先後排序
         filteredRecords.sort((a, b) => {
             if(a.date === b.date) return (b.time || '').localeCompare(a.time || '');
             return new Date(b.date) - new Date(a.date);
@@ -523,10 +557,9 @@
 
             const timeRange = record.time ? `${record.time}-${getEndTime(record.time, record.hours)}` : '';
             const titleText = record.hours === 0 ? 
-                `📦 雜費項目：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
+                `📦 雜費：${record.note} <span style="color:var(--danger)">$${record.fee}</span>` : 
                 `🎓 ${record.student} (${record.hours} 小時) ${record.status !== 'leave' ? `<span style="color:var(--primary)">$${record.fee}</span>` : ''}`;
 
-            // V18 優化：顯示課程備註
             const memoHTML = (record.note && record.hours > 0) ? `<div class="record-memo">📝 備註：${record.note}</div>` : '';
 
             card.innerHTML = `
@@ -583,8 +616,7 @@
                     const cEnd = cStart + parseFloat(c.hours) * 60;
                     return (startMins < cEnd && endMins > cStart);
                 });
-
-                if (conflict && !confirm(`⚠️ 警告：該時段與【${conflict.student}】的固定預排課程衝突！是否仍要排定？`)) return;
+                if (conflict && !confirm(`⚠️ 警告：該時段與【${conflict.student}】的固定預排課程衝突！`)) return;
                 
                 fixedClasses.push({ day, time, student, hours, rate, note: memo });
             } else {
@@ -592,7 +624,7 @@
                 if(!date || !time || hours<=0 || rate<=0) { alert('請完整填寫項目！'); return; }
 
                 let hasConflict = checkTimeConflict(date, time, hours, -1);
-                if (hasConflict && !confirm(`⚠️ 警告：該時段與當天【${hasConflict}】的課程衝突！是否仍要追加排課？`)) return;
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與當天【${hasConflict}】的課程衝突！`)) return;
 
                 records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo });
             }
@@ -608,6 +640,32 @@
         document.getElementById('studentInput').value = ''; 
         document.getElementById('classMemoInput').value = '';
         renderApp();
+    }
+
+    function renderFixedClassManageList() {
+        const container = document.getElementById('fixedClassListContainer');
+        container.innerHTML = '';
+        if (fixedClasses.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">目前沒有安排任何固定課表。</p>';
+            return;
+        }
+        fixedClasses.forEach((c, index) => {
+            container.innerHTML += `
+                <div class="fixed-class-item">
+                    <div class="fixed-class-info">
+                        <div class="fixed-class-title">🎓 ${c.student}</div>
+                        <div class="fixed-class-detail">每週 ${daysNameArr[parseInt(c.day)]} ${c.time} (${c.hours}h)</div>
+                    </div>
+                    <button class="btn-remove-fixed" onclick="removeFixedClass(${index})">🗑️ 刪除</button>
+                </div>
+            `;
+        });
+    }
+
+    function removeFixedClass(index) {
+        if(confirm(`確定要刪除固定課表嗎？`)) {
+            fixedClasses.splice(index, 1); saveToStorage(); renderFixedClassManageList(); renderApp();
+        }
     }
 
     let currentModalTarget = null;
@@ -628,17 +686,13 @@
         document.getElementById('actionModal').style.display = 'flex';
     }
 
-    function closeModal() {
-        document.getElementById('actionModal').style.display = 'none';
-        currentModalTarget = null;
-    }
+    function closeModal() { document.getElementById('actionModal').style.display = 'none'; currentModalTarget = null; }
 
     function editRecord() {
-        if (currentModalTarget.isExtraItem) { alert("雜費項目無上課時數可供修改！"); return; }
-        
-        let newHours = prompt(`請輸入【${currentModalTarget.student}】變更後的上課時數：`, currentModalTarget.hours);
+        if (currentModalTarget.isExtraItem) { alert("雜費項目無法更改時數！"); return; }
+        let newHours = prompt(`請輸入新的上課時數：`, currentModalTarget.hours);
         if (newHours && !isNaN(newHours)) {
-            newHours = Math.max(0, parseFloat(newHours));
+            newHours = parseFloat(newHours);
             let rate = currentModalTarget.rate || (currentModalTarget.fee / currentModalTarget.hours);
             let newFee = newHours * rate;
             
@@ -646,16 +700,14 @@
             let ignoreFixedStudent = currentModalTarget.isFixedProjected ? currentModalTarget.student : null;
             
             let hasConflict = checkTimeConflict(currentModalTarget.date, currentModalTarget.time, newHours, ignoreIndex, ignoreFixedStudent);
-            if (hasConflict && !confirm(`⚠️ 警告：時數放大後會與當天【${hasConflict}】重疊衝突！是否強行儲存？`)) return;
+            if (hasConflict && !confirm(`⚠️ 警告：時數重疊衝突！是否強行儲存？`)) return;
             
             if (currentModalTarget.isFixedProjected) {
                 records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newFee, status: 'unpaid', rate, note: currentModalTarget.note });
             } else {
                 const index = currentModalTarget.originalIndex;
                 if (index !== undefined && index !== -1) {
-                    records[index].hours = newHours;
-                    records[index].fee = newFee;
-                    records[index].rate = rate;
+                    records[index].hours = newHours; records[index].fee = newFee; records[index].rate = rate;
                 }
             }
             saveToStorage(); renderApp(); closeModal();
@@ -685,118 +737,78 @@
 
     function deleteRecordDirectly(index) {
         if(!confirm('確定要徹底刪除此筆紀錄嗎？')) return;
-        records.splice(index, 1);
-        saveToStorage(); renderApp();
+        records.splice(index, 1); saveToStorage(); renderApp();
     }
 
     function batchSettleUnpaid() {
         const student = document.getElementById('studentFilter').value;
         const filtered = getFilteredRecords().filter(r => r.status === 'unpaid');
         if (filtered.length === 0) return;
-        if (!confirm(`確認要將【${student}】的 ${filtered.length} 筆欠費標記為「✅ 已收費」嗎？`)) return;
-
+        if (!confirm(`確認要結清所有欠費嗎？`)) return;
         filtered.forEach(record => {
-            const index = records.indexOf(record);
-            if (index !== -1) records[index].status = 'paid';
+            const index = records.indexOf(record); if (index !== -1) records[index].status = 'paid';
         });
-        saveToStorage(); renderApp(); alert(`✅ 已一鍵收齊！`);
+        saveToStorage(); renderApp();
     }
 
     function generateBillingMessage() {
         const student = document.getElementById('studentFilter').value;
         const unpaidRecords = getFilteredRecords().filter(r => r.status === 'unpaid');
         if (unpaidRecords.length === 0) { alert('沒有未收費的紀錄喔！'); return; }
-
         let total = unpaidRecords.reduce((sum, r) => sum + r.fee, 0);
         let msg = `家長您好，向您核對一下【${student}】近期的費用明細：\n\n`;
-        
-        // V18 優化：請款訊息強制按日期+時間排序，並帶上課程備註
-        unpaidRecords.sort((a, b) => {
-            if(a.date === b.date) return (a.time || '').localeCompare(b.time || '');
-            return new Date(a.date) - new Date(b.date);
-        }).forEach(r => {
+        unpaidRecords.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).forEach(r => {
             const [y, m, d] = r.date.split('-');
-            if (r.hours === 0) {
-                msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
-            } else {
-                const memoText = r.note ? ` (${r.note})` : '';
-                msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${memoText} ($${r.fee})\n`;
-            }
+            if (r.hours === 0) msg += `📦 ${m}/${d} - ${r.note} ($${r.fee})\n`;
+            else msg += `📅 ${m}/${d} ${r.time} - ${r.hours}h${r.note ? ' ('+r.note+')' : ''} ($${r.fee})\n`;
         });
         msg += `\n總計費用為：$${total} 元。\n再麻煩您確認了，謝謝！😊`;
-
-        navigator.clipboard.writeText(msg).then(() => {
-            alert("✅ 請款訊息已複製！\n已經幫你把時間排序好，並加上了你的課程備註。快去 Line 貼上傳送吧。");
-        }).catch(() => { alert("複製失敗，請手動複製文字。"); });
+        navigator.clipboard.writeText(msg).then(() => { alert("✅ 請款文字已複製！"); });
     }
 
     function exportCSV() {
         const exportRecords = getFilteredRecords();
-        if (exportRecords.length === 0) { alert('此區間無紀錄可匯出！'); return; }
-
+        if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,總費用,狀態,備註\n";
         let totalHours = 0, totalPaid = 0, totalUnpaid = 0;
-
         exportRecords.forEach(r => {
             let s = r.status==='paid'?'已收費':r.status==='unpaid'?'未收費':r.status==='leave'?'已請假':'待上課';
-            let name = r.hours === 0 ? `[雜費]${r.note}` : r.student;
-            let memo = r.note || '';
-            csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${memo}\n`;
-            
+            csvContent += `${r.date},${r.time},${r.hours===0?'[雜費]'+r.note:r.student},${r.hours},${r.fee},${s},${r.note||''}\n`;
             if (r.status !== 'leave') {
                 totalHours += parseFloat(r.hours || 0);
                 if (r.status === 'paid') totalPaid += parseInt(r.fee || 0);
                 if (r.status === 'unpaid') totalUnpaid += parseInt(r.fee || 0);
             }
         });
-
         csvContent += `\n實上總時數,${totalHours},小時\n已收總收入,${totalPaid},元\n未收總欠費,${totalUnpaid},元\n`;
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a"); link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `家教財務報表_精確對帳版.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `家教財務報表.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     function backupData() {
         const data = { tutorClassesV18: fixedClasses, tutorRecordsV18: records };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url; 
-        
-        // V18 優化：備份檔名使用當下真實日期，而非當前日曆觀看月份
-        const todayStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
-        link.download = `家教備份檔_${todayStr}.json`;
-        
+        const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url;
+        link.download = `家教備份檔_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.json`;
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     function restoreData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        const file = event.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const data = JSON.parse(e.target.result);
                 if(data.tutorClassesV18 && data.tutorRecordsV18) {
-                    fixedClasses = data.tutorClassesV18;
-                    records = data.tutorRecordsV18;
-                    saveToStorage(); renderApp();
-                    alert("☁️ 資料庫成功復活！");
-                } else if (data.tutorClassesV17 && data.tutorRecordsV17) {
-                    fixedClasses = data.tutorClassesV17;
-                    records = data.tutorRecordsV17;
-                    saveToStorage(); renderApp();
-                    alert("☁️ 已成功讀取舊版資料並升級！");
-                } else { alert("檔案版本不相符！"); }
-            } catch (err) { alert("讀取失敗！"); }
+                    fixedClasses = data.tutorClassesV18; records = data.tutorRecordsV18;
+                    saveToStorage(); renderApp(); alert("☁️ 資料復活成功！");
+                } else { alert("備份檔格式不符"); }
+            } catch (err) { alert("讀取失敗"); }
         };
         reader.readAsText(file);
     }
 
     renderApp();
 </script>
-
 </body>
 </html>
