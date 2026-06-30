@@ -7,13 +7,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V27</title>
+    <title>家教小幫手 V28</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 100px; }
         
-        /* 修復 BUG 2：極致徹底的行動端背景鎖定 */
-        body.sheet-open { position: fixed; width: 100%; height: 100%; overflow: hidden; }
+        body.sheet-open { overflow: hidden; } /* 柔性背景鎖定 */
         
         .container { max-width: 600px; margin: auto; }
         h2 { text-align: center; color: #1e293b; margin-top: 5px; font-size: 1.6em; font-weight: 800; letter-spacing: 1px; }
@@ -30,23 +29,25 @@
         .dash-card p { margin: 0; font-size: 1.25em; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 4px; }
         .text-blue { color: var(--primary); } .text-green { color: var(--success); } .text-orange { color: var(--warning); }
 
-        /* 底部導航列 */
+        /* 底部原生導航列 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 90; border-radius: 20px 20px 0 0; }
-        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 0.75em; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 0.75em; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform 0.1s;}
+        .nav-item:active { transform: scale(0.9); }
         .nav-icon { font-size: 1.6em; }
         .nav-fab-container { position: relative; top: -15px; }
-        .nav-fab { width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 6px 16px rgba(37,99,235,0.4); cursor: pointer; }
+        .nav-fab { width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 6px 16px rgba(37,99,235,0.4); cursor: pointer; transition: transform 0.1s;}
+        .nav-fab:active { transform: scale(0.9); }
 
         /* 底部滑出視窗通用 */
-        .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 99; backdrop-filter: blur(3px); touch-action: none; /* 阻止手勢穿透核心 */ }
-        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 20px 24px 30px; box-sizing: border-box; z-index: 100; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 25px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .bottom-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 99; transition: opacity 0.3s; backdrop-filter: blur(3px); touch-action: none; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 20px 24px 30px; box-sizing: border-box; z-index: 100; transition: bottom 0.35s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 -5px 25px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;}
         .bottom-sheet.show { bottom: 0; }
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .sheet-title { font-weight: 800; font-size: 1.25em; color: #1e293b; }
         .btn-close { background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; font-weight: bold; font-size: 1.2em; cursor: pointer; color: #64748b; display: flex; justify-content: center; align-items: center;}
 
         .segment-control { display: flex; background: #e2e8f0; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
-        .segment-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 0.9em; font-weight: 700; color: #64748b; border-radius: 8px; cursor: pointer; }
+        .segment-btn { flex: 1; text-align: center; padding: 10px 0; font-size: 0.9em; font-weight: 700; color: #64748b; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .segment-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .input-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;}
@@ -303,12 +304,12 @@
 </div>
 
 <script>
-    // ⚙️ 修復 BUG 1：重新歸位核心全域變數，確保設定功能百分之百能順暢啟動
+    // ⚙️ 核心變數歸位：確保全部正常運作
     const daysNameArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
     
-    const nowTime = new Date();
-    let displayYear = nowTime.getFullYear();
-    let displayMonth = nowTime.getMonth(); 
+    const today = new Date();
+    let displayYear = today.getFullYear();
+    let displayMonth = today.getMonth(); 
     let isIncomeVisible = false;
 
     let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
@@ -326,25 +327,24 @@
         return `${String(Math.floor(totalMins / 60) % 24).padStart(2,'0')}:${String(Math.floor(totalMins % 60)).padStart(2,'0')}`;
     }
 
-    // 🕒 智慧本地日期格式生成器，預防時區假少一天 Bug
+    // 🕒 智慧本地日期格式生成器
     function getLocalDateStr() {
         const todayLocal = new Date();
         const offset = todayLocal.getTimezoneOffset() * 60000;
         return (new Date(todayLocal - offset)).toISOString().split('T')[0];
     }
 
-    // --- Bottom Sheets 智慧防滑動穿透控制中心 ---
     function closeAllSheets() {
-        document.body.classList.remove('sheet-open'); // 完全解鎖網頁背景
+        document.body.classList.remove('sheet-open');
         document.querySelectorAll('.bottom-sheet').forEach(sheet => sheet.classList.remove('show'));
         setTimeout(() => { 
             document.getElementById('overlay').style.display = 'none'; 
             document.getElementById('sheetFormTitle').innerText = '➕ 排定新課程/項目'; 
-        }, 350);
+        }, 300);
     }
 
     function openSheet(sheetId) {
-        document.body.classList.add('sheet-open'); // 動態切換鎖定背景滾動，阻絕 Bug 2
+        document.body.classList.add('sheet-open');
         document.getElementById('overlay').style.display = 'block';
         setTimeout(() => { document.getElementById(sheetId).classList.add('show'); }, 10);
     }
@@ -370,12 +370,13 @@
         if(!document.getElementById('dateInput').value) {
             document.getElementById('dateInput').value = getLocalDateStr();
         }
-        updateFormStudentSelect(); openSheet('addSheet');
+        updateFormStudentSelect();
+        openSheet('addSheet');
     }
 
     function updateFormStudentSelect() {
         const formSelect = document.getElementById('studentSelect');
-        if (!formSelect) return;
+        if(!formSelect) return;
         const students = new Set([...fixedClasses.map(c=>c.student), ...records.map(r=>r.student)]);
         formSelect.innerHTML = '';
         Array.from(students).forEach(s => { formSelect.innerHTML += `<option value="${s}">${s}</option>`; });
@@ -484,6 +485,12 @@
         openAddSheet();
     }
 
+    function timeToMins(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
     function checkTimeConflict(type, targetDateOrDay, time, hours, ignoreRecordIndex = -1) {
         const startMins = timeToMins(time); const endMins = startMins + parseFloat(hours) * 60;
         if (type === 'fixed') {
@@ -523,11 +530,14 @@
     function autoFillRate(name) {
         if (!name) return;
         let match = fixedClasses.find(c => c.student === name) || records.find(r => r.student === name && r.hours > 0 && r.fee > 0);
-        if (match) document.getElementById('rateInput').value = match.rate || (match.fee / match.hours);
+        if (match && match.rate) document.getElementById('rateInput').value = match.rate;
+        else if (match && match.fee) document.getElementById('rateInput').value = match.fee / match.hours;
     }
 
     function getFilteredRecords() {
         const timeF = document.getElementById('timeFilter').value; const studentF = document.getElementById('studentFilter').value;
+        const todayAtMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
         return records.filter(r => {
             if (studentF !== 'ALL' && r.student !== studentF) return false;
             if (timeF === 'all') return true;
@@ -535,8 +545,8 @@
             if (timeF === 'month') return recDate.getMonth() === displayMonth && recDate.getFullYear() === displayYear;
             if (timeF === 'today') return r.date === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             if (timeF === 'week') {
-                const dayOffset = today.getDay() === 0 ? 6 : today.getDay() - 1;
-                const m = new Date(today); m.setDate(today.getDate() - dayOffset);
+                const dayOffset = todayAtMidnight.getDay() === 0 ? 6 : todayAtMidnight.getDay() - 1;
+                const m = new Date(todayAtMidnight); m.setDate(todayAtMidnight.getDate() - dayOffset);
                 const s = new Date(m); s.setDate(m.getDate() + 6);
                 return recDate >= m && recDate <= s;
             }
@@ -560,18 +570,17 @@
         const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
         const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
 
+        // 📅 補齊前方的空格
         for (let i = 0; i < adjustedFirstDay; i++) grid.innerHTML += `<div class="cal-cell" style="background: transparent; border:none; cursor:default;"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             let classesToRender = [];
             
-            // 📅 核心重構：固定預排加上「日期起算時間軸防污染規則」
+            // 📌 日期起算機制：固定課表絕不往前污染
             fixedClasses.filter(c => {
                 const cellDayOfWeek = new Date(displayYear, displayMonth, d).getDay().toString();
                 if (c.day !== cellDayOfWeek) return false;
-                
-                // 比對該固定課程的「建立日期」，早於建立日期的歷史格子絕對不投影
                 const allowedStartDate = c.startDate || '1970-01-01';
                 return dateStr >= allowedStartDate;
             }).forEach(c => {
@@ -580,9 +589,7 @@
                 }
             });
             
-            records.filter(r => r.date === dateStr).forEach(r => { 
-                classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r) }); 
-            });
+            records.filter(r => r.date === dateStr).forEach(r => { classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r) }); });
 
             if (studentF !== 'ALL') classesToRender = classesToRender.filter(cls => cls.student === studentF);
             classesToRender.sort((a, b) => a.time.localeCompare(b.time));
@@ -597,15 +604,32 @@
             classesToRender.forEach((cls) => {
                 let bgClass = cls.status === 'paid' ? 'cal-paid' : (cls.status === 'unpaid' ? 'cal-unpaid' : (cls.status === 'leave' ? 'cal-leave' : 'cal-pending'));
                 const isExtraItem = cls.hours === 0;
-                cellHTML += `<div class="cal-class ${bgClass}" onclick="openActionSheet('${encodeURIComponent(JSON.stringify({...cls, date: dateStr, isExtraItem, originalIndex: cls.originalIndex}))}')">
-                    ${cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : ''}${isExtraItem ? '💰'+cls.student+'('+cls.note+')' : cls.student+' ('+cls.hours+'h)'}
+                const displayName = isExtraItem ? `💰${cls.student}(${cls.note})` : `${cls.student} (${cls.hours}h)`;
+                const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
+
+                const safePayload = encodeURIComponent(JSON.stringify({
+                    date: dateStr, time: cls.time, student: cls.student, hours: cls.hours, 
+                    rate: cls.rate || 0, fee: cls.fee || (cls.hours * cls.rate), status: cls.status, 
+                    isFixedProjected: cls.isFixedProjected, isExtraItem: isExtraItem, note: cls.note,
+                    originalIndex: cls.originalIndex
+                })).replace(/'/g, "%27");
+
+                cellHTML += `<div class="cal-class ${bgClass}" onclick="openActionSheet('${safePayload}')">
+                    ${timeLabel}${cls.status==='paid'?'✅ ':cls.status==='leave'?'💤 ':''}${displayName}
                 </div>`;
             });
-            grid.innerHTML += cellHTML + `</div>`;
+            cellHTML += `</div>`;
+            grid.innerHTML += cellHTML;
+        }
+
+        // 📅 補齊後方的空格，保持網格完美
+        const totalCells = adjustedFirstDay + daysInMonth;
+        const remainingCells = (7 - (totalCells % 7)) % 7;
+        for (let i = 0; i < remainingCells; i++) {
+            grid.innerHTML += `<div class="cal-cell" style="background: transparent; border:none; cursor:default;"></div>`;
         }
     }
 
-    // 手機緊湊型電子流水帳
     function renderRecords(filteredRecords) {
         const recordList = document.getElementById('recordList'); recordList.innerHTML = '';
         filteredRecords.sort((a, b) => b.date.localeCompare(a.date) || (b.time || '').localeCompare(a.time || ''));
@@ -661,7 +685,7 @@
         if(student === 'NEW') student = document.getElementById('newStudentInput').value.trim();
         if(!student) { alert('請選擇或填寫學生姓名！'); return; }
 
-        const localToday = getLocalDateStr(); // 抓取當下的時間軸原點
+        const localToday = getLocalDateStr();
 
         if (type === 'fixed' || type === 'temp') {
             const time = document.getElementById('timeInput').value;
@@ -672,8 +696,6 @@
             if (type === 'fixed') {
                 const day = document.getElementById('dayInput').value; if(!time || hours<=0 || rate<=0) { alert('請填寫完整排課資訊！'); return; }
                 if (checkTimeConflict('fixed', day, time, hours, -1)) { alert('⚠️ 固定課表時段重疊衝突！'); return; }
-                
-                // 📅 註入 startDate 限制，鎖定未來的日子
                 fixedClasses.push({ day, time, student, hours, rate, note: memo, startDate: localToday });
             } else {
                 const date = document.getElementById('dateInput').value; if(!date || !time || hours<=0 || rate<=0) { alert('請填寫完整排課資訊！'); return; }
@@ -747,14 +769,14 @@
     }
 
     function handleDelete() {
-        if(!confirm('確定要徹底刪除此項目嗎？')) return;
+        if(!confirm('確定要刪除此項目嗎？\n(提示：若是單日停課，建議使用「💤 標記為：取消/請假」)')) return;
         if (!currentModalTarget.isFixedProjected) records.splice(currentModalTarget.originalIndex, 1);
         else records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave' });
         saveToStorage(); renderApp(); closeAllSheets();
     }
 
     function batchSettleUnpaid() {
-        const student = document.getElementById('studentFilter').value; if (student === 'ALL') { alert("⚠️ 請選定單一學生。"); return; }
+        const student = document.getElementById('studentFilter').value; if (student === 'ALL') { alert("⚠️ 請先在畫面上方選擇「特定學生」，再執行一鍵結清。"); return; }
         getFilteredRecords().filter(r => r.status === 'unpaid').forEach(r => records[records.indexOf(r)].status = 'paid');
         saveToStorage(); closeAllSheets(); renderApp();
     }
