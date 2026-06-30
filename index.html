@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V29</title>
+    <title>家教小幫手 V29.1</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent;}
@@ -59,13 +59,12 @@
         .calendar-header-wrapper { position: relative; font-weight: 800; font-size: 1.25em; color: var(--primary); cursor: pointer; padding: 4px 8px; border-radius:8px;}
         .jump-date-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
-        .color-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8em; color: #64748b; font-weight: 700;}
-        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .color-legend { display: flex; justify-content: center; gap: 12px; font-size: 0.8em; color: #64748b; font-weight: 700;}
+        .legend-item { display: flex; align-items: center; gap: 4px; }
         .legend-box { width: 12px; height: 12px; border-radius: 4px; }
         .box-pending { background: var(--primary); } .box-unpaid { background: var(--warning); } .box-paid { background: var(--success); } .box-leave { background: #94a3b8; }
 
-        /* V29 滑動動畫容器與防呆手勢 */
-        #calendarWrapper { overflow: hidden; touch-action: pan-y; }
+        #calendarWrapper { overflow: hidden; touch-action: pan-y; margin-top: 8px;}
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; background: #e2e8f0; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; transition: transform 0.25s ease-out, opacity 0.2s ease-out; }
         
         .cal-day-name { background: #475569; color: white; text-align: center; padding: 8px 0; font-size: 0.85em; font-weight: 700; }
@@ -148,14 +147,19 @@
         <button class="btn-nav" onclick="changeMonth(1)">▶</button>
     </div>
     
-    <div class="color-legend">
+    <!-- 圖例區塊優化 -->
+    <div class="color-legend" style="margin-bottom: 5px;">
         <div class="legend-item"><div class="legend-box box-pending"></div> 待上課</div>
         <div class="legend-item"><div class="legend-box box-unpaid"></div> 待收費</div>
         <div class="legend-item"><div class="legend-box box-paid"></div> 已收費</div>
         <div class="legend-item"><div class="legend-box box-leave"></div> 取消</div>
     </div>
+    <div class="color-legend">
+        <div class="legend-item" style="margin-right:8px;">🔄 固定課</div>
+        <div class="legend-item" style="margin-right:8px;">📌 臨時課</div>
+        <div class="legend-item">💰 雜費</div>
+    </div>
 
-    <!-- V29 滑動動畫容器 -->
     <div id="calendarWrapper">
         <div class="calendar-grid" id="calendarGrid"></div>
     </div>
@@ -214,7 +218,6 @@
     <div class="input-row" id="timeStudentRow">
         <div class="input-group" id="timeGroup"><label>開始時間</label><input type="time" id="timeInput" value="18:00"></div>
     </div>
-    <!-- V29 優化：inputmode="decimal" 喚出手機純數字鍵盤 -->
     <div class="input-row" id="rateRow">
         <div class="input-group"><label>時數 (小時)</label><input type="number" id="hoursInput" step="0.5" value="2" min="0" inputmode="decimal"></div>
         <div class="input-group"><label>時薪 ($)</label><input type="number" id="rateInput" value="800" min="0" inputmode="decimal"></div>
@@ -293,8 +296,7 @@
     let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
     let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
 
-    // V29: 觸覺回饋引擎
-    function triggerVibrate(ms = 15) {
+    function triggerVibrate(ms = 30) {
         if (navigator.vibrate) {
             try { navigator.vibrate(ms); } catch(e) {}
         }
@@ -372,7 +374,7 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         updateFormStudentSelect();
-        initSwipeLogic(); // 初始化滑動手勢
+        initSwipeLogic();
     });
 
     function handleStudentSelectChange() {
@@ -471,7 +473,7 @@
 
     function handleCellClick(e, dateStr) {
         if (e.target.closest('.cal-class')) return; 
-        triggerVibrate(10);
+        triggerVibrate(15);
         setFormType('temp'); document.getElementById('dateInput').value = dateStr;
         document.getElementById('sheetFormTitle').innerText = `📅 快速排課：${dateStr.split('-')[1]}月${dateStr.split('-')[2]}日`;
         openAddSheet();
@@ -487,7 +489,8 @@
         const startMins = timeToMins(time); const endMins = startMins + parseFloat(hours) * 60;
         if (type === 'fixed') {
             const dayOfWeek = targetDateOrDay.toString();
-            return fixedClasses.find(c => c.day === dayOfWeek && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)))?.student || null;
+            const conflictFixed = fixedClasses.find(c => c.day === dayOfWeek && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)));
+            return conflictFixed ? conflictFixed.student : null;
         } else {
             const dateStr = targetDateOrDay; const [y, m, d] = dateStr.split('-');
             const dayOfWeek = new Date(parseInt(y), parseInt(m)-1, parseInt(d)).getDay().toString();
@@ -498,16 +501,14 @@
             });
             if (conflictRec) return conflictRec.student;
 
-            return fixedClasses.find(c => c.day === dayOfWeek && !records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time) && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)))?.student || null;
+            const conflictFixed = fixedClasses.find(c => c.day === dayOfWeek && !records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time) && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)));
+            return conflictFixed ? conflictFixed.student : null;
         }
     }
 
-    // V29 動態滑動過場引擎
     function changeMonth(direction) {
-        triggerVibrate(15);
+        triggerVibrate(20);
         const grid = document.getElementById('calendarGrid');
-        
-        // 滑出動畫
         grid.style.transform = direction > 0 ? 'translateX(-20px)' : 'translateX(20px)';
         grid.style.opacity = '0';
 
@@ -517,10 +518,7 @@
             if (displayMonth < 0) { displayMonth = 11; displayYear--; }
             renderApp();
 
-            // 預備滑入位置
             grid.style.transform = direction > 0 ? 'translateX(20px)' : 'translateX(-20px)';
-            
-            // 滑入動畫
             setTimeout(() => {
                 grid.style.transform = 'translateX(0)';
                 grid.style.opacity = '1';
@@ -528,30 +526,16 @@
         }, 200);
     }
 
-    // V29 手勢偵測綁定
     function initSwipeLogic() {
         const wrapper = document.getElementById('calendarWrapper');
-        let touchStartX = 0;
-        let touchEndX = 0;
+        let touchStartX = 0; let touchEndX = 0;
 
-        wrapper.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-
+        wrapper.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
         wrapper.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
+            if (touchEndX < touchStartX - 50) changeMonth(1); 
+            if (touchEndX > touchStartX + 50) changeMonth(-1); 
         }, {passive: true});
-
-        function handleSwipe() {
-            const SWIPE_THRESHOLD = 50; // 觸發滑動的最短距離
-            if (touchEndX < touchStartX - SWIPE_THRESHOLD) {
-                changeMonth(1); // 向左滑 -> 下個月
-            }
-            if (touchEndX > touchStartX + SWIPE_THRESHOLD) {
-                changeMonth(-1); // 向右滑 -> 上個月
-            }
-        }
     }
 
     function updateStudentFilterOptions() {
@@ -624,11 +608,21 @@
                 return dateStr >= allowedStartDate;
             }).forEach(c => {
                 if (!records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time)) {
-                    classesToRender.push({ ...c, status: 'pending', isFixedProjected: true });
+                    // V29: 事先標記它是固定課
+                    classesToRender.push({ ...c, status: 'pending', isFixedProjected: true, classIcon: '🔄' });
                 }
             });
             
-            records.filter(r => r.date === dateStr).forEach(r => { classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r) }); });
+            records.filter(r => r.date === dateStr).forEach(r => { 
+                let icon = '📌';
+                if (r.hours === 0) icon = '💰';
+                else {
+                    const rDay = new Date(displayYear, displayMonth, d).getDay().toString();
+                    const isOriginallyFixed = fixedClasses.some(fc => fc.student === r.student && fc.day === rDay && fc.time === r.time);
+                    if (isOriginallyFixed) icon = '🔄';
+                }
+                classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r), classIcon: icon }); 
+            });
 
             if (studentF !== 'ALL') classesToRender = classesToRender.filter(cls => cls.student === studentF);
             classesToRender.sort((a, b) => a.time.localeCompare(b.time));
@@ -643,7 +637,9 @@
             classesToRender.forEach((cls) => {
                 let bgClass = cls.status === 'paid' ? 'cal-paid' : (cls.status === 'unpaid' ? 'cal-unpaid' : (cls.status === 'leave' ? 'cal-leave' : 'cal-pending'));
                 const isExtraItem = cls.hours === 0;
-                const displayName = isExtraItem ? `💰${cls.student}(${cls.note})` : `${cls.student} (${cls.hours}h)`;
+                
+                // V29: 圖示化分類顯示
+                const displayName = isExtraItem ? `${cls.classIcon} ${cls.student}(${cls.note})` : `${cls.classIcon} ${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
 
                 const safePayload = encodeURIComponent(JSON.stringify({
@@ -683,6 +679,11 @@
             
             let dateMD = record.date.split('-')[1] + '/' + record.date.split('-')[2];
             let isMisc = record.hours === 0;
+
+            const recDateObj = new Date(record.date);
+            const rDay = recDateObj.getDay().toString();
+            let isFixed = fixedClasses.some(fc => fc.student === record.student && fc.day === rDay && fc.time === record.time);
+            let icon = isMisc ? '💰' : (isFixed ? '🔄' : '📌');
             
             row.innerHTML = `
                 <div class="ledger-left">
@@ -690,7 +691,7 @@
                         <span>📅 ${dateMD} ${record.time ? record.time : ''}</span>
                         ${record.note ? `<span style="color:#64748b; font-weight:normal;">| 📝 ${record.note}</span>` : ''}
                     </div>
-                    <div class="ledger-title">${isMisc ? `📦 [雜費] ` : `🎓 `}${record.student}</div>
+                    <div class="ledger-title">${icon} ${record.student}</div>
                 </div>
                 <div class="ledger-right">
                     <div class="ledger-fee" style="${record.status==='leave'?'text-decoration:line-through; opacity:0.5;':''}">$${record.fee}</div>
@@ -719,7 +720,7 @@
     }
 
     function addClass() {
-        triggerVibrate(20);
+        triggerVibrate(30);
         const type = document.getElementById('typeInput').value; let student = document.getElementById('studentSelect').value;
         if(student === 'NEW') student = document.getElementById('newStudentInput').value.trim();
         if(!student) { alert('請選擇或填寫學生姓名！'); return; }
@@ -734,11 +735,13 @@
             
             if (type === 'fixed') {
                 const day = document.getElementById('dayInput').value; if(!time || hours<=0 || rate<=0) { alert('請填寫完整排課資訊！'); return; }
-                if (checkTimeConflict('fixed', day, time, hours, -1)) { alert('⚠️ 固定課表時段重疊衝突！'); return; }
+                let hasConflict = checkTimeConflict('fixed', day, time, hours, -1);
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的課程時段衝突！是否仍要排定？`)) return;
                 fixedClasses.push({ day, time, student, hours, rate, note: memo, startDate: localToday });
             } else {
                 const date = document.getElementById('dateInput').value; if(!date || !time || hours<=0 || rate<=0) { alert('請填寫完整排課資訊！'); return; }
-                if (checkTimeConflict('temp', date, time, hours, -1)) { alert('⚠️ 該時段已有安排課程！'); return; }
+                let hasConflict = checkTimeConflict('temp', date, time, hours, -1);
+                if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的課程時段衝突！是否仍要排定？`)) return;
                 records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo });
             }
         } else if (type === 'extra') {
@@ -765,7 +768,7 @@
     function openActionSheet(payloadStr) {
         triggerVibrate();
         currentModalTarget = JSON.parse(decodeURIComponent(payloadStr));
-        const displayName = currentModalTarget.isExtraItem ? `📦雜費: ${currentModalTarget.student}-${currentModalTarget.note}` : currentModalTarget.student;
+        const displayName = currentModalTarget.isExtraItem ? `💰雜費: ${currentModalTarget.student}-${currentModalTarget.note}` : currentModalTarget.student;
         document.getElementById('actionSheetTitle').innerText = displayName;
         document.getElementById('actionSheetMemo').innerText = currentModalTarget.note ? `📝 備註: ${currentModalTarget.note}` : '';
         openSheet('actionSheet');
@@ -774,7 +777,7 @@
     function openActionSheetFromList(index) {
         triggerVibrate();
         currentModalTarget = { ...records[index], originalIndex: index };
-        const displayName = records[index].hours === 0 ? `📦雜費: ${records[index].student}-${records[index].note}` : records[index].student;
+        const displayName = records[index].hours === 0 ? `💰雜費: ${records[index].student}-${records[index].note}` : records[index].student;
         document.getElementById('actionSheetTitle').innerText = displayName;
         document.getElementById('actionSheetMemo').innerText = records[index].note ? `📝 備註: ${records[index].note}` : '';
         openSheet('actionSheet');
@@ -793,7 +796,9 @@
         let newHours = prompt(`請輸入新的上課時數：`, currentModalTarget.hours);
         if (newHours && !isNaN(newHours)) {
             newHours = parseFloat(newHours); let rate = currentModalTarget.rate || (currentModalTarget.fee / currentModalTarget.hours);
-            if (checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, currentModalTarget.originalIndex)) { alert('⚠️ 修改後時數會與其他課程重疊！'); return; }
+            let hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, currentModalTarget.originalIndex);
+            if (hasConflict && !confirm(`⚠️ 警告：修改後的時段與【${hasConflict}】的課程衝突！是否強行儲存？`)) return;
+            
             if (currentModalTarget.isFixedProjected) {
                 records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newHours * rate, status: 'unpaid', rate, note: currentModalTarget.note });
             } else {
@@ -804,7 +809,7 @@
     }
 
     function updateStatus(newStatus) {
-        triggerVibrate(20);
+        triggerVibrate(25);
         if (currentModalTarget.isFixedProjected) {
             records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note });
         } else {
