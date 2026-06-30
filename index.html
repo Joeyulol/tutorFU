@@ -7,10 +7,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V29.1</title>
+    <title>家教小幫手 V29.2</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
-        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: 12px; margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent;}
+        /* 優化：加入 env(safe-area-inset-top) 避免 iOS 動態島或瀏海遮擋頂部 UI */
+        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent;}
         
         body.sheet-open { overflow: hidden; touch-action: none; }
         
@@ -147,7 +148,6 @@
         <button class="btn-nav" onclick="changeMonth(1)">▶</button>
     </div>
     
-    <!-- 圖例區塊優化 -->
     <div class="color-legend" style="margin-bottom: 5px;">
         <div class="legend-item"><div class="legend-box box-pending"></div> 待上課</div>
         <div class="legend-item"><div class="legend-box box-unpaid"></div> 待收費</div>
@@ -296,10 +296,9 @@
     let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
     let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
 
+    // 優化：清空震動功能，因應 iOS 系統無震動 API 需求
     function triggerVibrate(ms = 30) {
-        if (navigator.vibrate) {
-            try { navigator.vibrate(ms); } catch(e) {}
-        }
+        // do nothing
     }
 
     function saveToStorage() {
@@ -608,20 +607,26 @@
                 return dateStr >= allowedStartDate;
             }).forEach(c => {
                 if (!records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time)) {
-                    // V29: 事先標記它是固定課
                     classesToRender.push({ ...c, status: 'pending', isFixedProjected: true, classIcon: '🔄' });
                 }
             });
             
             records.filter(r => r.date === dateStr).forEach(r => { 
                 let icon = '📌';
-                if (r.hours === 0) icon = '💰';
-                else {
+                // 優先使用明確標記的 recordType，如果沒有(舊資料)則退回猜測邏輯
+                if (r.recordType === 'extra' || (!r.recordType && r.hours === 0)) {
+                    icon = '💰';
+                } else if (r.recordType === 'fixed') {
+                    icon = '🔄';
+                } else if (r.recordType === 'temp') {
+                    icon = '📌';
+                } else {
+                    // 舊資料相容邏輯
                     const rDay = new Date(displayYear, displayMonth, d).getDay().toString();
                     const isOriginallyFixed = fixedClasses.some(fc => fc.student === r.student && fc.day === rDay && fc.time === r.time);
                     if (isOriginallyFixed) icon = '🔄';
                 }
-                classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r), classIcon: icon }); 
+                classesToRender.push({ ...r, isFixedProjected: false, time: r.time || '', originalIndex: records.indexOf(r), classIcon: icon, recordType: r.recordType }); 
             });
 
             if (studentF !== 'ALL') classesToRender = classesToRender.filter(cls => cls.student === studentF);
@@ -636,9 +641,8 @@
             
             classesToRender.forEach((cls) => {
                 let bgClass = cls.status === 'paid' ? 'cal-paid' : (cls.status === 'unpaid' ? 'cal-unpaid' : (cls.status === 'leave' ? 'cal-leave' : 'cal-pending'));
-                const isExtraItem = cls.hours === 0;
+                const isExtraItem = cls.hours === 0 || cls.recordType === 'extra';
                 
-                // V29: 圖示化分類顯示
                 const displayName = isExtraItem ? `${cls.classIcon} ${cls.student}(${cls.note})` : `${cls.classIcon} ${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
 
@@ -646,7 +650,7 @@
                     date: dateStr, time: cls.time, student: cls.student, hours: cls.hours, 
                     rate: cls.rate || 0, fee: cls.fee || (cls.hours * cls.rate), status: cls.status, 
                     isFixedProjected: cls.isFixedProjected, isExtraItem: isExtraItem, note: cls.note,
-                    originalIndex: cls.originalIndex
+                    originalIndex: cls.originalIndex, recordType: cls.recordType
                 })).replace(/'/g, "%27");
 
                 cellHTML += `<div class="cal-class ${bgClass}" onclick="openActionSheet('${safePayload}')">
@@ -678,12 +682,22 @@
             let bText = record.status === 'paid' ? '已結' : (record.status === 'unpaid' ? '待繳' : (record.status === 'leave' ? '取消' : '未上'));
             
             let dateMD = record.date.split('-')[1] + '/' + record.date.split('-')[2];
-            let isMisc = record.hours === 0;
+            let isMisc = record.hours === 0 || record.recordType === 'extra';
 
-            const recDateObj = new Date(record.date);
-            const rDay = recDateObj.getDay().toString();
-            let isFixed = fixedClasses.some(fc => fc.student === record.student && fc.day === rDay && fc.time === record.time);
-            let icon = isMisc ? '💰' : (isFixed ? '🔄' : '📌');
+            let icon = '📌';
+            if (isMisc) {
+                icon = '💰';
+            } else if (record.recordType === 'fixed') {
+                icon = '🔄';
+            } else if (record.recordType === 'temp') {
+                icon = '📌';
+            } else {
+                // 舊資料相容邏輯
+                const recDateObj = new Date(record.date);
+                const rDay = recDateObj.getDay().toString();
+                let isFixed = fixedClasses.some(fc => fc.student === record.student && fc.day === rDay && fc.time === record.time);
+                icon = isFixed ? '🔄' : '📌';
+            }
             
             row.innerHTML = `
                 <div class="ledger-left">
@@ -742,13 +756,15 @@
                 const date = document.getElementById('dateInput').value; if(!date || !time || hours<=0 || rate<=0) { alert('請填寫完整排課資訊！'); return; }
                 let hasConflict = checkTimeConflict('temp', date, time, hours, -1);
                 if (hasConflict && !confirm(`⚠️ 警告：該時段與【${hasConflict}】的課程時段衝突！是否仍要排定？`)) return;
-                records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo });
+                // 優化：寫入明確的 recordType
+                records.push({ date, time, student, hours, fee: hours*rate, status: 'pending', rate, note: memo, recordType: 'temp' });
             }
         } else if (type === 'extra') {
             const date = document.getElementById('dateInput').value; const note = document.getElementById('itemDescInput').value.trim();
             const fee = Math.max(0, parseInt(document.getElementById('customFeeInput').value) || 0);
             if(!date || !note || fee<=0) { alert('請完整填寫項目與代墊金額！'); return; }
-            records.push({ date, time: '', student, hours: 0, fee, status: 'unpaid', note });
+            // 優化：寫入明確的 recordType
+            records.push({ date, time: '', student, hours: 0, fee, status: 'unpaid', note, recordType: 'extra' });
         }
         saveToStorage(); closeAllSheets(); document.getElementById('newStudentInput').value = ''; document.getElementById('classMemoInput').value = ''; document.getElementById('customFeeInput').value = ''; renderApp();
     }
@@ -785,7 +801,7 @@
 
     function editRecord() {
         triggerVibrate();
-        if (currentModalTarget.hours === 0) { 
+        if (currentModalTarget.isExtraItem || currentModalTarget.hours === 0) { 
             let newFee = prompt(`請輸入新的代墊金額：`, currentModalTarget.fee);
             if (newFee && !isNaN(newFee)) {
                 records[currentModalTarget.originalIndex].fee = Math.max(0, parseInt(newFee));
@@ -800,7 +816,8 @@
             if (hasConflict && !confirm(`⚠️ 警告：修改後的時段與【${hasConflict}】的課程衝突！是否強行儲存？`)) return;
             
             if (currentModalTarget.isFixedProjected) {
-                records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newHours * rate, status: 'unpaid', rate, note: currentModalTarget.note });
+                // 優化：當固定課被修改並實體化時，明確標記為 recordType: 'fixed'
+                records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newHours * rate, status: 'unpaid', rate, note: currentModalTarget.note, recordType: 'fixed' });
             } else {
                 records[currentModalTarget.originalIndex].hours = newHours; records[currentModalTarget.originalIndex].fee = newHours * rate;
             }
@@ -811,7 +828,8 @@
     function updateStatus(newStatus) {
         triggerVibrate(25);
         if (currentModalTarget.isFixedProjected) {
-            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note });
+            // 優化：明確標記
+            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note, recordType: 'fixed' });
         } else {
             records[currentModalTarget.originalIndex].status = newStatus;
         }
@@ -822,7 +840,7 @@
         triggerVibrate([20, 50, 20]);
         if(!confirm('確定要刪除此項目嗎？\n(提示：若是單日停課，建議使用「💤 標記為：取消/請假」)')) return;
         if (!currentModalTarget.isFixedProjected) records.splice(currentModalTarget.originalIndex, 1);
-        else records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave' });
+        else records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave', recordType: 'fixed' });
         saveToStorage(); renderApp(); closeAllSheets();
     }
 
