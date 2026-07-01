@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V30.0 (Unified)</title>
+    <title>家教小幫手 V30.1</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent;}
@@ -379,8 +379,6 @@
         }
     }
 
-    // 🏆 終極解法：大一統資料引擎 (Unified Records Engine)
-    // 無論是日曆、報表、Dashboard，全部透過這個函數取得「實際異動紀錄 + 未來固定課表」的完美融合名單
     function getUnifiedRecords(timeF, studentF) {
         const todayAtMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
@@ -399,13 +397,11 @@
             return true;
         };
 
-        // 1. 載入已經發生實質狀態改變的 records (包含請假、已收費、修改過時數的固定課)
         let unified = records.filter(r => {
             if (studentF !== 'ALL' && r.student !== studentF) return false;
             return isDateInFilter(r.date, timeF);
         }).map(r => ({ ...r, isFixedProjected: false, originalIndex: records.indexOf(r) }));
 
-        // 2. 自動演算出符合時間區間內的「固定課表」，補上那些還沒發生的未來課程
         let startDate, endDate;
         if (timeF === 'month') {
             startDate = new Date(displayYear, displayMonth, 1);
@@ -433,13 +429,12 @@
                 if (c.day !== dayOfWeek) return;
                 const allowedStartDate = c.startDate || '1970-01-01';
                 if (dateStr >= allowedStartDate) {
-                    // 如果該固定課這天已經被修改/請假 (有在 records 裡)，就不重複投影
                     const isOverridden = records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time);
                     if (!isOverridden) {
                         unified.push({
                             ...c,
                             date: dateStr,
-                            status: 'pending', // 投影出來的狀態預設為待上課
+                            status: 'pending', 
                             fee: c.hours * c.rate,
                             isFixedProjected: true,
                             recordType: 'fixed',
@@ -469,8 +464,8 @@
             let totalAllTuitionUnpaid = 0, totalAllMiscUnpaid = 0;
 
             filteredRecords.forEach(r => {
-                // 絕對嚴謹過濾：只有 paid, unpaid, pending 會被計算。所有 leave 及髒資料通通阻擋
-                if (!['paid', 'unpaid', 'pending'].includes(r.status)) return;
+                // BUG 修復：報表也只計算 paid 與 unpaid，徹底排除未來的 pending
+                if (!['paid', 'unpaid'].includes(r.status)) return;
                 
                 let name = r.student;
                 if(!stats[name]) stats[name] = { hours: 0, tuitionPaid: 0, miscPaid: 0, tuitionUnpaid: 0, miscUnpaid: 0 };
@@ -488,7 +483,7 @@
             container.innerHTML += `
                 <div class="student-stat-card" style="border-left: 6px solid var(--primary);">
                     <div class="student-stat-name">🌟 總計報表 (選定區間)</div>
-                    <div class="student-stat-row"><span>實上與排定時數：</span><span style="font-weight:900;">${parseFloat(totalAllHours.toFixed(2))}h</span></div>
+                    <div class="student-stat-row"><span>實上時數：</span><span style="font-weight:900;">${parseFloat(totalAllHours.toFixed(2))}h</span></div>
                     <div class="section-title">教學淨收入 (學費)</div>
                     <div class="student-stat-row"><span>已收學費：</span><span style="font-weight:900; color:var(--success);">$${totalAllTuitionPaid}</span></div>
                     <div class="student-stat-row"><span>待收學費：</span><span style="font-weight:900; color:var(--danger);">$${totalAllTuitionUnpaid}</span></div>
@@ -503,7 +498,7 @@
                 container.innerHTML += `
                     <div class="student-stat-card">
                         <div class="student-stat-name">🎓 ${name}</div>
-                        <div class="student-stat-row"><span>排定時數：</span><span>${parseFloat(s.hours.toFixed(2))}h</span></div>
+                        <div class="student-stat-row"><span>實上時數：</span><span>${parseFloat(s.hours.toFixed(2))}h</span></div>
                         <div class="student-stat-row"><span>學費收入：</span><span>已收 <span style="color:var(--success); font-weight:bold;">$${s.tuitionPaid}</span> / 待收 <span style="color:var(--danger); font-weight:bold;">$${s.tuitionUnpaid}</span></span></div>
                         <div class="student-stat-row"><span>雜費代墊：</span><span>已收 <span style="color:var(--success); font-weight:bold;">$${s.miscPaid}</span> / 待收 <span style="color:var(--danger); font-weight:bold;">$${s.miscUnpaid}</span></span></div>
                     </div>
@@ -625,8 +620,7 @@
         const studentF = document.getElementById('studentFilter').value; 
         const timeF = document.getElementById('timeFilter').value;
         
-        // 取得統一格式的陣列
-        const calendarRecords = getUnifiedRecords('month', studentF); // 日曆固定要拿整個月
+        const calendarRecords = getUnifiedRecords('month', studentF);
         const activeRecords = (timeF === 'month') ? calendarRecords : getUnifiedRecords(timeF, studentF);
         
         renderCalendar(calendarRecords); 
@@ -652,7 +646,7 @@
 
             let dayTotalHours = 0;
             classesToRender.forEach(cls => { 
-                // 絕對嚴格判斷：只加總有效的狀態
+                // 日曆上的單日小時加總，保留 pending 讓你知道當天預定要上幾個小時
                 if (['paid', 'unpaid', 'pending'].includes(cls.status) && cls.hours > 0) {
                     dayTotalHours += parseFloat(cls.hours); 
                 }
@@ -706,7 +700,6 @@
             const row = document.createElement('div');
             row.className = 'ledger-row';
             
-            // 使用跟日曆一樣的 Payload，解決列表 Index 對不準的問題
             const safePayload = encodeURIComponent(JSON.stringify({
                 date: record.date, time: record.time, student: record.student, hours: record.hours, 
                 rate: record.rate || 0, fee: record.fee || (record.hours * (record.rate||0)), status: record.status, 
@@ -750,8 +743,8 @@
     function updateDashboard(activeRecords) {
         let totalHours = 0, totalIncome = 0, totalDebt = 0;
         activeRecords.forEach(record => {
-            // 絕對嚴格判斷：防止請假(leave)或髒資料混入
-            if (['paid', 'unpaid', 'pending'].includes(record.status)) {
+            // BUG 修復：嚴格把關，只有「已收(paid)」跟「待繳(unpaid)」才算進實上跟財務，完全排除 pending
+            if (['paid', 'unpaid'].includes(record.status)) {
                 if(record.hours > 0) {
                     totalHours += parseFloat(record.hours);
                     if(record.status === 'paid') totalIncome += parseInt(record.fee || 0); 
@@ -888,7 +881,8 @@
             
             csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${r.note||''},${feeType}\n`;
             
-            if (['paid', 'unpaid', 'pending'].includes(r.status)) {
+            // BUG 修復：匯出的總額也只計算 paid 和 unpaid
+            if (['paid', 'unpaid'].includes(r.status)) {
                 totalHours += parseFloat(r.hours || 0);
                 if (r.hours > 0) {
                     if (r.status === 'paid') totalTuitionPaid += parseInt(r.fee || 0);
@@ -900,7 +894,7 @@
             }
         });
         
-        csvContent += `\n實上與排定總時數,${parseFloat(totalHours.toFixed(2))},小時\n`;
+        csvContent += `\n實上總時數,${parseFloat(totalHours.toFixed(2))},小時\n`;
         csvContent += `已收學費,${totalTuitionPaid},元\n待收學費,${totalTuitionUnpaid},元\n`;
         csvContent += `已收回代墊雜費,${totalMiscPaid},元\n待收回代墊雜費,${totalMiscUnpaid},元\n`;
         
