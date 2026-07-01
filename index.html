@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V30.1</title>
+    <title>家教小幫手 V30.2</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent;}
@@ -464,7 +464,6 @@
             let totalAllTuitionUnpaid = 0, totalAllMiscUnpaid = 0;
 
             filteredRecords.forEach(r => {
-                // BUG 修復：報表也只計算 paid 與 unpaid，徹底排除未來的 pending
                 if (!['paid', 'unpaid'].includes(r.status)) return;
                 
                 let name = r.student;
@@ -624,7 +623,11 @@
         const activeRecords = (timeF === 'month') ? calendarRecords : getUnifiedRecords(timeF, studentF);
         
         renderCalendar(calendarRecords); 
-        renderRecords(activeRecords); 
+        
+        // 🚨 修正核心：流水帳(Ledger)只顯示「明確記錄下來的項目」，排除未來未發生的自動投影固定課
+        const ledgerRecords = activeRecords.filter(r => !r.isFixedProjected);
+        renderRecords(ledgerRecords); 
+        
         updateDashboard(activeRecords);
     }
 
@@ -646,7 +649,6 @@
 
             let dayTotalHours = 0;
             classesToRender.forEach(cls => { 
-                // 日曆上的單日小時加總，保留 pending 讓你知道當天預定要上幾個小時
                 if (['paid', 'unpaid', 'pending'].includes(cls.status) && cls.hours > 0) {
                     dayTotalHours += parseFloat(cls.hours); 
                 }
@@ -692,11 +694,11 @@
         }
     }
 
-    function renderRecords(activeRecords) {
+    function renderRecords(ledgerRecords) {
         const recordList = document.getElementById('recordList'); recordList.innerHTML = '';
-        activeRecords.sort((a, b) => b.date.localeCompare(a.date) || (b.time || '').localeCompare(a.time || ''));
+        ledgerRecords.sort((a, b) => b.date.localeCompare(a.date) || (b.time || '').localeCompare(a.time || ''));
         
-        activeRecords.forEach((record) => {
+        ledgerRecords.forEach((record) => {
             const row = document.createElement('div');
             row.className = 'ledger-row';
             
@@ -737,13 +739,12 @@
             `;
             recordList.appendChild(row);
         });
-        if(activeRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; padding: 20px; background:white;">此區間無任何明細紀錄</p>';
+        if(ledgerRecords.length === 0) recordList.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; padding: 20px; background:white;">此區間無任何明細紀錄</p>';
     }
 
     function updateDashboard(activeRecords) {
         let totalHours = 0, totalIncome = 0, totalDebt = 0;
         activeRecords.forEach(record => {
-            // BUG 修復：嚴格把關，只有「已收(paid)」跟「待繳(unpaid)」才算進實上跟財務，完全排除 pending
             if (['paid', 'unpaid'].includes(record.status)) {
                 if(record.hours > 0) {
                     totalHours += parseFloat(record.hours);
@@ -869,7 +870,8 @@
     }
 
     function exportCSV() {
-        const exportRecords = getUnifiedRecords(document.getElementById('timeFilter').value, document.getElementById('studentFilter').value); 
+        // 🚨 修正核心：匯出CSV也應該只看「明確記錄下來的項目」，不要匯出未來還沒發生的固定課
+        const exportRecords = getUnifiedRecords(document.getElementById('timeFilter').value, document.getElementById('studentFilter').value).filter(r => !r.isFixedProjected); 
         if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,收費金額,狀態,備註,款項類型\n";
         let totalHours = 0, totalTuitionPaid = 0, totalMiscPaid = 0, totalTuitionUnpaid = 0, totalMiscUnpaid = 0;
@@ -881,7 +883,6 @@
             
             csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${r.note||''},${feeType}\n`;
             
-            // BUG 修復：匯出的總額也只計算 paid 和 unpaid
             if (['paid', 'unpaid'].includes(r.status)) {
                 totalHours += parseFloat(r.hours || 0);
                 if (r.hours > 0) {
