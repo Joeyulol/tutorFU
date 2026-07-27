@@ -7,10 +7,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V30.3</title>
+    <title>家教小幫手 V31.0 (Pro)</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
-        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent;}
+        /* 優化：加入 touch-action: manipulation 移除 iOS 點擊 300ms 延遲，手感更佳 */
+        body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation;}
         
         body.sheet-open { overflow: hidden; touch-action: none; }
         
@@ -276,7 +277,7 @@
         <div class="sheet-title" id="actionSheetTitle">操作項目</div>
         <button class="btn-close" onclick="closeAllSheets()">×</button>
     </div>
-    <div id="actionSheetMemo" style="font-size: 0.9em; color: #64748b; margin-bottom: 20px; font-weight:600;"></div>
+    <div id="actionSheetMemo" style="font-size: 0.9em; color: #64748b; margin-bottom: 20px; font-weight:600; word-break: break-all;"></div>
     
     <button class="action-sheet-btn" style="background:var(--primary); color:white;" onclick="editRecord()">✏️ 修改時數或費用</button>
     <button class="action-sheet-btn" style="background:var(--success); color:white;" onclick="updateStatus('paid')">✅ 標記為：已結清</button>
@@ -292,8 +293,9 @@
     let displayMonth = today.getMonth(); 
     let isIncomeVisible = false;
 
-    let fixedClasses = JSON.parse(localStorage.getItem('tutorClassesV18')) || [];
-    let records = JSON.parse(localStorage.getItem('tutorRecordsV18')) || []; 
+    // 安全載入資料，過濾可能因暫存錯誤產生的 null
+    let fixedClasses = (JSON.parse(localStorage.getItem('tutorClassesV18')) || []).filter(c => c !== null);
+    let records = (JSON.parse(localStorage.getItem('tutorRecordsV18')) || []).filter(r => r !== null); 
 
     function saveToStorage() {
         localStorage.setItem('tutorClassesV18', JSON.stringify(fixedClasses));
@@ -429,7 +431,8 @@
                 if (c.day !== dayOfWeek) return;
                 const allowedStartDate = c.startDate || '1970-01-01';
                 if (dateStr >= allowedStartDate) {
-                    const isOverridden = records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time);
+                    // 優化：精準判定這堂固定課是否被修改過（即使修改了時間，透過 originalTime 也能認得出來，不再重複投影）
+                    const isOverridden = records.some(r => r.date === dateStr && r.student === c.student && (r.time === c.time || r.originalTime === c.time));
                     if (!isOverridden) {
                         unified.push({
                             ...c,
@@ -471,11 +474,11 @@
                 
                 if (r.hours > 0) {
                     stats[name].hours += parseFloat(r.hours); totalAllHours += parseFloat(r.hours);
-                    if(r.status === 'paid') { stats[name].tuitionPaid += r.fee; totalAllTuitionPaid += r.fee; }
-                    if(r.status === 'unpaid') { stats[name].tuitionUnpaid += r.fee; totalAllTuitionUnpaid += r.fee; }
+                    if(r.status === 'paid') { stats[name].tuitionPaid += parseInt(r.fee)||0; totalAllTuitionPaid += parseInt(r.fee)||0; }
+                    if(r.status === 'unpaid') { stats[name].tuitionUnpaid += parseInt(r.fee)||0; totalAllTuitionUnpaid += parseInt(r.fee)||0; }
                 } else {
-                    if(r.status === 'paid') { stats[name].miscPaid += r.fee; totalAllMiscPaid += r.fee; }
-                    if(r.status === 'unpaid') { stats[name].miscUnpaid += r.fee; totalAllMiscUnpaid += r.fee; }
+                    if(r.status === 'paid') { stats[name].miscPaid += parseInt(r.fee)||0; totalAllMiscPaid += parseInt(r.fee)||0; }
+                    if(r.status === 'unpaid') { stats[name].miscUnpaid += parseInt(r.fee)||0; totalAllMiscUnpaid += parseInt(r.fee)||0; }
                 }
             });
 
@@ -556,7 +559,7 @@
             });
             if (conflictRec) return conflictRec.student;
 
-            const conflictFixed = fixedClasses.find(c => c.day === dayOfWeek && !records.some(r => r.date === dateStr && r.student === c.student && r.time === c.time) && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)));
+            const conflictFixed = fixedClasses.find(c => c.day === dayOfWeek && !records.some(r => r.date === dateStr && r.student === c.student && (r.time === c.time || r.originalTime === c.time)) && (startMins < (timeToMins(c.time) + parseFloat(c.hours)*60) && endMins > timeToMins(c.time)));
             return conflictFixed ? conflictFixed.student : null;
         }
     }
@@ -604,7 +607,8 @@
 
     function autoFillRate(name) {
         if (!name) return;
-        let match = fixedClasses.find(c => c.student === name) || records.find(r => r.student === name && r.hours > 0 && r.fee > 0);
+        // 優化：反向搜尋 records，確保帶入的是「最新一次」的時薪
+        let match = fixedClasses.find(c => c.student === name) || [...records].reverse().find(r => r.student === name && r.hours > 0 && r.fee > 0);
         if (match && match.rate) document.getElementById('rateInput').value = match.rate;
         else if (match && match.fee) document.getElementById('rateInput').value = match.fee / match.hours;
     }
@@ -671,8 +675,9 @@
                 const displayName = isExtraItem ? `${icon} ${cls.student}(${cls.note})` : `${icon} ${cls.student} (${cls.hours}h)`;
                 const timeLabel = cls.time ? `<span class="class-time">${cls.time}-${getEndTime(cls.time, cls.hours)}</span>` : '';
 
+                // 加入 originalTime 傳遞
                 const safePayload = encodeURIComponent(JSON.stringify({
-                    date: dateStr, time: cls.time, student: cls.student, hours: cls.hours, 
+                    date: dateStr, time: cls.time, originalTime: cls.originalTime || cls.time, student: cls.student, hours: cls.hours, 
                     rate: cls.rate || 0, fee: cls.fee || (cls.hours * (cls.rate||0)), status: cls.status, 
                     isFixedProjected: cls.isFixedProjected, isExtraItem: isExtraItem, note: cls.note,
                     originalIndex: cls.originalIndex, recordType: cls.recordType
@@ -702,7 +707,7 @@
             row.className = 'ledger-row';
             
             const safePayload = encodeURIComponent(JSON.stringify({
-                date: record.date, time: record.time, student: record.student, hours: record.hours, 
+                date: record.date, time: record.time, originalTime: record.originalTime || record.time, student: record.student, hours: record.hours, 
                 rate: record.rate || 0, fee: record.fee || (record.hours * (record.rate||0)), status: record.status, 
                 isFixedProjected: record.isFixedProjected, isExtraItem: (record.hours === 0 || record.recordType === 'extra'), note: record.note,
                 originalIndex: record.originalIndex, recordType: record.recordType
@@ -827,8 +832,9 @@
             let hasConflict = checkTimeConflict('temp', currentModalTarget.date, currentModalTarget.time, newHours, currentModalTarget.originalIndex);
             if (hasConflict && !confirm(`⚠️ 警告：修改後的時段與【${hasConflict}】的課程衝突！是否強行儲存？`)) return;
             
+            // 優化：寫入 originalTime 防呆，確保修改後不會在日曆上跑出重複的固定課
             if (currentModalTarget.isFixedProjected) {
-                records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: newHours, fee: newHours * rate, status: 'unpaid', rate, note: currentModalTarget.note, recordType: 'fixed' });
+                records.push({ date: currentModalTarget.date, time: currentModalTarget.time, originalTime: currentModalTarget.originalTime, student: currentModalTarget.student, hours: newHours, fee: newHours * rate, status: 'unpaid', rate, note: currentModalTarget.note, recordType: 'fixed' });
             } else {
                 records[currentModalTarget.originalIndex].hours = newHours; records[currentModalTarget.originalIndex].fee = newHours * rate;
             }
@@ -837,8 +843,9 @@
     }
 
     function updateStatus(newStatus) {
+        // 優化：寫入 originalTime 防呆
         if (currentModalTarget.isFixedProjected) {
-            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note, recordType: 'fixed' });
+            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, originalTime: currentModalTarget.originalTime, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: newStatus, note: currentModalTarget.note, recordType: 'fixed' });
         } else {
             records[currentModalTarget.originalIndex].status = newStatus;
         }
@@ -850,7 +857,8 @@
         if (!currentModalTarget.isFixedProjected) {
             records.splice(currentModalTarget.originalIndex, 1);
         } else {
-            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave', recordType: 'fixed' });
+            // 優化：寫入 originalTime 防呆
+            records.push({ date: currentModalTarget.date, time: currentModalTarget.time, originalTime: currentModalTarget.originalTime, student: currentModalTarget.student, hours: currentModalTarget.hours, fee: currentModalTarget.fee, status: 'leave', recordType: 'fixed' });
         }
         saveToStorage(); renderApp(); closeAllSheets();
     }
@@ -868,12 +876,10 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
-    // 🚨 全面修改為 Blob 下載，100% 解決 iOS Safari 無法匯出的問題
     function exportCSV() {
         const exportRecords = getUnifiedRecords(document.getElementById('timeFilter').value, document.getElementById('studentFilter').value).filter(r => !r.isFixedProjected); 
         if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
         
-        // 加入 \uFEFF BOM，確保 Excel 打開不會亂碼
         let csvContent = "\uFEFF日期,時間,學生/項目,時數,收費金額,狀態,備註,款項類型\n";
         let totalHours = 0, totalTuitionPaid = 0, totalMiscPaid = 0, totalTuitionUnpaid = 0, totalMiscUnpaid = 0;
         
@@ -881,7 +887,6 @@
             let s = r.status==='paid'?'已收費':r.status==='unpaid'?'未收費':r.status==='leave'?'已請假':'待上課';
             let feeType = r.hours > 0 ? '學費' : '代墊雜費';
             
-            // 安全處理文字欄位，避免使用者輸入「逗號」破壞 CSV 格式
             let rawName = r.hours === 0 ? `[雜費]${r.student}-${r.note||''}` : r.student;
             let safeName = `"${rawName.replace(/"/g, '""')}"`;
             let safeNote = r.note ? `"${r.note.replace(/"/g, '""')}"` : '';
@@ -904,7 +909,6 @@
         csvContent += `已收學費,${totalTuitionPaid},元\n待收學費,${totalTuitionUnpaid},元\n`;
         csvContent += `已收回代墊雜費,${totalMiscPaid},元\n待收回代墊雜費,${totalMiscUnpaid},元\n`;
         
-        // 改用 Blob 物件，強制瀏覽器觸發下載行為，突破 iOS 限制
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a"); 
         link.href = URL.createObjectURL(blob); 
