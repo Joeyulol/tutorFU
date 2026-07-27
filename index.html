@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="家教小幫手">
     
-    <title>家教小幫手 V30.2</title>
+    <title>家教小幫手 V30.3</title>
     <style>
         :root { --primary: #2196f3; --success: #4caf50; --warning: #ff9800; --danger: #f44336; --bg: #f2f5f8; --card-bg: #ffffff; }
         body { font-family: '-apple-system', 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: #333; padding: max(12px, env(safe-area-inset-top)) 12px 100px 12px; margin: 0; -webkit-tap-highlight-color: transparent;}
@@ -624,7 +624,6 @@
         
         renderCalendar(calendarRecords); 
         
-        // 🚨 修正核心：流水帳(Ledger)只顯示「明確記錄下來的項目」，排除未來未發生的自動投影固定課
         const ledgerRecords = activeRecords.filter(r => !r.isFixedProjected);
         renderRecords(ledgerRecords); 
         
@@ -869,19 +868,25 @@
         saveToStorage(); closeAllSheets(); renderApp();
     }
 
+    // 🚨 全面修改為 Blob 下載，100% 解決 iOS Safari 無法匯出的問題
     function exportCSV() {
-        // 🚨 修正核心：匯出CSV也應該只看「明確記錄下來的項目」，不要匯出未來還沒發生的固定課
         const exportRecords = getUnifiedRecords(document.getElementById('timeFilter').value, document.getElementById('studentFilter').value).filter(r => !r.isFixedProjected); 
         if (exportRecords.length === 0) { alert('無紀錄可匯出！'); return; }
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,時間,學生/項目,時數,收費金額,狀態,備註,款項類型\n";
+        
+        // 加入 \uFEFF BOM，確保 Excel 打開不會亂碼
+        let csvContent = "\uFEFF日期,時間,學生/項目,時數,收費金額,狀態,備註,款項類型\n";
         let totalHours = 0, totalTuitionPaid = 0, totalMiscPaid = 0, totalTuitionUnpaid = 0, totalMiscUnpaid = 0;
         
         exportRecords.forEach(r => {
             let s = r.status==='paid'?'已收費':r.status==='unpaid'?'未收費':r.status==='leave'?'已請假':'待上課';
             let feeType = r.hours > 0 ? '學費' : '代墊雜費';
-            let name = r.hours === 0 ? `[雜費]${r.student}-${r.note}` : r.student;
             
-            csvContent += `${r.date},${r.time},${name},${r.hours},${r.fee},${s},${r.note||''},${feeType}\n`;
+            // 安全處理文字欄位，避免使用者輸入「逗號」破壞 CSV 格式
+            let rawName = r.hours === 0 ? `[雜費]${r.student}-${r.note||''}` : r.student;
+            let safeName = `"${rawName.replace(/"/g, '""')}"`;
+            let safeNote = r.note ? `"${r.note.replace(/"/g, '""')}"` : '';
+            
+            csvContent += `${r.date},${r.time || ''},${safeName},${r.hours},${r.fee},${s},${safeNote},${feeType}\n`;
             
             if (['paid', 'unpaid'].includes(r.status)) {
                 totalHours += parseFloat(r.hours || 0);
@@ -899,8 +904,14 @@
         csvContent += `已收學費,${totalTuitionPaid},元\n待收學費,${totalTuitionUnpaid},元\n`;
         csvContent += `已收回代墊雜費,${totalMiscPaid},元\n待收回代墊雜費,${totalMiscUnpaid},元\n`;
         
-        const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", `家教精確財務報表.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        // 改用 Blob 物件，強制瀏覽器觸發下載行為，突破 iOS 限制
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a"); 
+        link.href = URL.createObjectURL(blob); 
+        link.download = `家教精確財務報表.csv`; 
+        document.body.appendChild(link); 
+        link.click(); 
+        document.body.removeChild(link);
     }
 
     function backupData() {
